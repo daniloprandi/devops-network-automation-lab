@@ -1,76 +1,99 @@
-# 🚀 DevOps Lab – Flask + Nginx + systemd
+# 🚀 DevOps Lab – Flask, Gunicorn, Nginx, systemd
 
-## 📌 Obiettivo del progetto
-
-Realizzare una mini infrastruttura reale con:
-
-* Backend Python (Flask)
-* Reverse Proxy (Nginx)
-* Gestione servizio (systemd)
-* Isolamento ambiente (virtualenv)
-
-Obiettivo: simulare un'architettura base utilizzata in ambienti aziendali.
+## 👤 Autori
+- IA (ChatGPT)
+- Danilo Prandi
 
 ---
 
-# 🧱 Architettura
+## 🧭 Overview
 
-```
-Client (browser / curl)
-        ↓
-     Nginx (porta 80)
-        ↓
- Reverse Proxy
-        ↓
-Flask App (127.0.0.1:5000)
-        ↓
-systemd (gestione servizio)
-```
+Questo progetto dimostra il deploy di un'applicazione web Python utilizzando una architettura tipica in ambiente Linux.
+
+### 🔧 Architettura
+
+Client → Nginx → Gunicorn → Flask App  
+            ↑  
+          systemd  
 
 ---
 
-# ⚙️ Setup iniziale
+## 🎯 Obiettivo
 
-## Aggiornamento sistema
-
-```bash
-sudo apt update
-sudo apt upgrade -y
-```
-
-## Installazione componenti
-
-```bash
-sudo apt install python3 python3-venv python3-pip nginx -y
-```
+- Deploy di una web app Python in ambiente Linux
+- Separazione tra sviluppo e produzione
+- Gestione del servizio tramite systemd
+- Utilizzo di reverse proxy (Nginx)
+- Persistenza dopo reboot
 
 ---
 
-# 📁 Struttura progetto
+## 🧠 Tecnologie utilizzate
 
-```
-/var/www/devopsapp/
-└── backend/
-    ├── app.py
-    └── venv/
-```
+### 🔹 Flask
+Framework web leggero per Python utilizzato per creare API.
 
----
+Funzionalità:
+- Routing HTTP (`@app.route`)
+- Gestione richieste/risposte
+- Creazione endpoint REST
 
-# 🐍 Backend Flask
-
-## Creazione ambiente virtuale
-
-```bash
-cd /var/www/devopsapp/backend
-python3 -m venv venv
-source venv/bin/activate
-pip install flask
-```
+⚠️ Utilizzato solo per sviluppo (non produzione)
 
 ---
 
-## Codice applicazione (`app.py`)
+### 🔹 Gunicorn
+WSGI server per eseguire applicazioni Python in produzione.
+
+Funzionalità:
+- Gestione processi worker
+- Interfaccia tra web server e applicazione
+- Performance e stabilità
+
+✔ Sostituisce il server di sviluppo Flask
+
+---
+
+### 🔹 Nginx
+Web server e reverse proxy.
+
+Funzionalità:
+- Riceve richieste HTTP
+- Le inoltra al backend
+- Migliora sicurezza e scalabilità
+
+✔ Il backend non è esposto direttamente
+
+---
+
+### 🔹 systemd
+Sistema di gestione servizi Linux.
+
+Funzionalità:
+- Avvio automatico servizi
+- Restart automatico
+- Gestione lifecycle processi
+
+✔ Garantisce persistenza dopo reboot
+
+---
+
+## 📁 Struttura progetto
+
+
+devopsapp/
+├── backend/
+│ ├── app.py
+│ └── venv/
+├── nginx/
+├── docs/
+├── index.html
+└── README.md
+
+
+---
+
+## ⚙️ Applicazione Flask
 
 ```python
 from flask import Flask, jsonify
@@ -84,93 +107,23 @@ def home():
 @app.route("/health")
 def health():
     return jsonify(status="ok")
-
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000)
-```
-
----
-
-## Test manuale
-
-```bash
+🔧 Setup ambiente
+Virtualenv
+python3 -m venv venv
+source venv/bin/activate
+Installazione dipendenze
+pip install flask gunicorn
+🚀 Esecuzione
+🔸 Modalità sviluppo
 python app.py
-curl http://127.0.0.1:5000
-```
+🔸 Modalità produzione
+gunicorn --bind 127.0.0.1:5000 app:app
+⚙️ Configurazione systemd
 
----
+File:
 
-# 🌐 Configurazione Nginx
-
-## File config
-
-```bash
-sudo nano /etc/nginx/sites-available/devopsapp
-```
-
-## Contenuto
-
-```nginx
-server {
-    listen 80;
-    server_name localhost;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
----
-
-## Abilitazione sito
-
-```bash
-sudo ln -s /etc/nginx/sites-available/devopsapp /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
----
-
-## Test Nginx
-
-```bash
-curl http://localhost
-```
-
----
-
-# 🔒 Sicurezza backend
-
-Verifica che Flask NON sia esposto:
-
-```bash
-curl http://192.168.X.X:5000
-```
-
-Risultato atteso:
-
-```
-Connection refused
-```
-
----
-
-# ⚙️ Configurazione systemd
-
-## Creazione servizio
-
-```bash
-sudo nano /etc/systemd/system/devopsapp.service
-```
-
-## Contenuto
-
-```ini
+/etc/systemd/system/devopsapp.service
+Contenuto:
 [Unit]
 Description=DevOps Flask API
 After=network.target
@@ -178,116 +131,58 @@ After=network.target
 [Service]
 User=dprandi
 WorkingDirectory=/var/www/devopsapp/backend
-Environment="PATH=/var/www/devopsapp/backend/venv/bin"
-ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
+
+# Dev server (commentato)
+# ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
+
+# Production server
+ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --bind 127.0.0.1:5000 app:app
+
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
-```
+🌐 Configurazione Nginx
+server {
+    listen 80;
 
----
-
-## Attivazione servizio
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl start devopsapp
-sudo systemctl enable devopsapp
-```
-
----
-
-## Verifica stato
-
-```bash
-sudo systemctl status devopsapp
-```
-
-Output atteso:
-
-```
-active (running)
-```
-
----
-
-## Log servizio
-
-```bash
-journalctl -u devopsapp -n 50 --no-pager
-```
-
----
-
-# 🧪 Test finale
-
-## Backend (locale)
-
-```bash
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+    }
+}
+🧪 Test
 curl http://127.0.0.1:5000
-```
-
-## Nginx (entrypoint)
-
-```bash
 curl http://localhost
-```
-
----
-
-# 🔁 Test persistenza
-
-```bash
+🔍 Debug e verifiche
+systemctl status devopsapp
+ps aux | grep gunicorn
+ss -tulnp | grep 5000
+🔁 Test persistenza
 sudo reboot
-```
 
-Dopo riavvio:
+Dopo reboot:
 
-```bash
-curl http://localhost
-```
+systemctl status devopsapp
+🎯 Risultato finale
 
-✔ L’app deve rispondere automaticamente
+✔ Applicazione Flask funzionante
+✔ Gunicorn configurato
+✔ systemd attivo
+✔ Nginx reverse proxy
+✔ Servizio persistente
 
----
+🧠 Competenze dimostrate
 
-# 🧠 Concetti DevOps dimostrati
+Linux server management
 
-* Reverse Proxy (Nginx)
-* Isolamento servizi (localhost)
-* Gestione processi (systemd)
-* Virtual Environment Python
-* Architettura a livelli
-* Debug e troubleshooting (porta occupata, restart loop)
+systemd
 
----
+Nginx reverse proxy
 
-# ⚠️ Note importanti
+Python / Flask
 
-* Flask è un development server
-* In produzione usare:
+Gunicorn
 
-  * Gunicorn / uWSGI
-* systemd elimina dipendenza da terminale
-* Backend NON deve essere esposto direttamente
+Networking (127.0.0.1 vs esposizione)
 
----
-
-# 🚀 Prossimi sviluppi
-
-* Gunicorn (production server)
-* Dockerizzazione
-* CI/CD pipeline
-* Logging avanzato
-* HTTPS (Let's Encrypt)
-
----
-
-# 📌 Autori: IA (ChatGPT, Danilo Prandi)
-
-DevOps Lab – percorso Infrastructure & Automation
-Focus: Linux, Networking, Automation, Backend
-
----
-
+Debugging infrastrutturale
