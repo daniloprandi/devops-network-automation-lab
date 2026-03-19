@@ -1,101 +1,38 @@
-# 🚀 DevOps Lab – Flask, Gunicorn, Nginx, systemd
+📘 DEVOPS LAB – TIMELINE OPS COMPLETA
+👤 Autori
 
-## 👤 Autori
-- IA (ChatGPT)
-- Danilo Prandi
+IA (ChatGPT)
 
----
+Danilo Prandi
 
-## 🧭 Overview
+🧭 OBIETTIVO DEL PROGETTO
 
-Questo progetto dimostra il deploy di un'applicazione web Python utilizzando una architettura tipica in ambiente Linux.
+Costruire e deployare un'applicazione Python in ambiente Linux utilizzando:
 
-### 🔧 Architettura
+Flask (applicazione)
 
-Client → Nginx → Gunicorn → Flask App  
-            ↑  
-          systemd  
+Gunicorn (application server)
 
----
+Nginx (reverse proxy)
 
-## 🎯 Obiettivo
+systemd (gestione servizio)
 
-- Deploy di una web app Python in ambiente Linux
-- Separazione tra sviluppo e produzione
-- Gestione del servizio tramite systemd
-- Utilizzo di reverse proxy (Nginx)
-- Persistenza dopo reboot
+🧠 ARCHITETTURA FINALE
+Client → Nginx → Gunicorn → Flask
+                    ↑
+                 systemd
+📍 FASE 1 — CREAZIONE BACKEND (FLASK)
+🔹 Definizione Flask
 
----
+Flask è un framework web Python leggero che permette di creare API e applicazioni web.
 
-## 🧠 Tecnologie utilizzate
+Gestisce routing HTTP
 
-### 🔹 Flask
-Framework web leggero per Python utilizzato per creare API.
+Restituisce risposte al client
 
-Funzionalità:
-- Routing HTTP (`@app.route`)
-- Gestione richieste/risposte
-- Creazione endpoint REST
+Usato per sviluppo
 
-⚠️ Utilizzato solo per sviluppo (non produzione)
-
----
-
-### 🔹 Gunicorn
-WSGI server per eseguire applicazioni Python in produzione.
-
-Funzionalità:
-- Gestione processi worker
-- Interfaccia tra web server e applicazione
-- Performance e stabilità
-
-✔ Sostituisce il server di sviluppo Flask
-
----
-
-### 🔹 Nginx
-Web server e reverse proxy.
-
-Funzionalità:
-- Riceve richieste HTTP
-- Le inoltra al backend
-- Migliora sicurezza e scalabilità
-
-✔ Il backend non è esposto direttamente
-
----
-
-### 🔹 systemd
-Sistema di gestione servizi Linux.
-
-Funzionalità:
-- Avvio automatico servizi
-- Restart automatico
-- Gestione lifecycle processi
-
-✔ Garantisce persistenza dopo reboot
-
----
-
-## 📁 Struttura progetto
-
-
-devopsapp/
-├── backend/
-│ ├── app.py
-│ └── venv/
-├── nginx/
-├── docs/
-├── index.html
-└── README.md
-
-
----
-
-## ⚙️ Applicazione Flask
-
-```python
+🔹 Codice applicazione
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -107,42 +44,120 @@ def home():
 @app.route("/health")
 def health():
     return jsonify(status="ok")
-🔧 Setup ambiente
-Virtualenv
+🔹 Comandi
 python3 -m venv venv
 source venv/bin/activate
-Installazione dipendenze
-pip install flask gunicorn
-🚀 Esecuzione
-🔸 Modalità sviluppo
+pip install flask
 python app.py
-🔸 Modalità produzione
+🎯 Risultato
+
+App funzionante su 127.0.0.1:5000
+
+Server Flask attivo (development)
+
+📍 FASE 2 — INTRODUZIONE GUNICORN
+🔹 Definizione Gunicorn
+
+Gunicorn è un WSGI server che esegue applicazioni Python in produzione.
+
+Gestisce worker process
+
+Riceve richieste HTTP
+
+Sostituisce Flask dev server
+
+🔹 Problema affrontato
+
+Errore:
+
+Address already in use
+
+👉 causa:
+
+Flask già in esecuzione sulla porta 5000
+
+🔹 Soluzione
+sudo systemctl stop devopsapp
+pkill gunicorn
+🔹 Avvio corretto
 gunicorn --bind 127.0.0.1:5000 app:app
-⚙️ Configurazione systemd
+🔹 Problema incontrato
 
-File:
+request bloccata con curl
 
-/etc/systemd/system/devopsapp.service
-Contenuto:
-[Unit]
-Description=DevOps Flask API
-After=network.target
+causa: working directory
 
+🔹 Soluzione definitiva
+gunicorn --chdir /var/www/devopsapp/backend \
+--bind 127.0.0.1:5000 \
+app:app
+🎯 Risultato
+
+Gunicorn attivo
+
+API funzionante
+
+Server production-ready
+
+📍 FASE 3 — VIRTUALENV
+🔹 Definizione
+
+Ambiente isolato Python per gestire dipendenze.
+
+🔹 Struttura
+/var/www/devopsapp/backend/venv/
+🔹 Binari importanti
+venv/bin/gunicorn
+venv/bin/python
+🎯 Concetto chiave
+
+systemd NON usa il virtualenv automaticamente
+👉 bisogna usare path assoluti
+
+📍 FASE 4 — SYSTEMD
+🔹 Definizione
+
+Sistema Linux per gestione servizi.
+
+🔹 File service
 [Service]
-User=dprandi
-WorkingDirectory=/var/www/devopsapp/backend
+ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn \
+--chdir /var/www/devopsapp/backend \
+--bind 127.0.0.1:5000 \
+app:app
+🔹 Comandi
+sudo systemctl daemon-reload
+sudo systemctl start devopsapp
+sudo systemctl enable devopsapp
+systemctl status devopsapp
+🔹 Problema affrontato
 
-# Dev server (commentato)
-# ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
+conflitto porta
 
-# Production server
-ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --bind 127.0.0.1:5000 app:app
+processo manuale vs systemd
 
-Restart=always
+🔹 Soluzione
 
-[Install]
-WantedBy=multi-user.target
-🌐 Configurazione Nginx
+👉 eliminare processi manuali
+
+pkill gunicorn
+🎯 Risultato
+
+servizio persistente
+
+avvio automatico al boot
+
+📍 FASE 5 — NGINX
+🔹 Definizione
+
+Web server e reverse proxy.
+
+🔹 Concetto chiave
+Nginx → inoltra richieste → Gunicorn
+
+👉 backend NON esposto
+
+🔹 Configurazione
 server {
     listen 80;
 
@@ -150,39 +165,86 @@ server {
         proxy_pass http://127.0.0.1:5000;
     }
 }
-🧪 Test
-curl http://127.0.0.1:5000
-curl http://localhost
-🔍 Debug e verifiche
+🎯 Risultato
+
+accesso via localhost
+
+separazione livelli
+
+📍 FASE 6 — DEBUGGING REALE
+🔹 Problemi affrontati
+1. Porta occupata
+
+causa: processo attivo
+
+soluzione: stop/kill
+
+2. Gunicorn non risponde
+
+causa: working directory
+
+soluzione: --chdir
+
+3. systemd non parte
+
+causa: porta occupata
+
+soluzione: pulizia processi
+
+4. PATH / eseguibili
+
+gunicorn non trovato
+
+soluzione: path assoluto o ./gunicorn
+
+🎯 Competenze sviluppate
+
+troubleshooting reale
+
+gestione processi
+
+debugging rete/app
+
+📍 FASE 7 — TEST FINALE
+🔹 Verifiche
 systemctl status devopsapp
 ps aux | grep gunicorn
 ss -tulnp | grep 5000
-🔁 Test persistenza
+curl http://127.0.0.1:5000
+curl http://localhost
+🔹 Test reboot
 sudo reboot
 
-Dopo reboot:
+👉 tutto funzionante dopo riavvio
 
-systemctl status devopsapp
-🎯 Risultato finale
+🎯 RISULTATO FINALE
 
-✔ Applicazione Flask funzionante
-✔ Gunicorn configurato
-✔ systemd attivo
+✔ Backend Python
+✔ Gunicorn production server
+✔ systemd gestione servizio
 ✔ Nginx reverse proxy
-✔ Servizio persistente
+✔ Persistenza dopo reboot
 
-🧠 Competenze dimostrate
+🧠 COMPETENZE ACQUISITE
 
 Linux server management
 
-systemd
+Process management (systemd)
 
-Nginx reverse proxy
+Reverse proxy (Nginx)
 
-Python / Flask
+Python backend (Flask)
 
-Gunicorn
-
-Networking (127.0.0.1 vs esposizione)
+Deployment con Gunicorn
 
 Debugging infrastrutturale
+
+💥 CONCLUSIONE
+
+Questo progetto dimostra la capacità di:
+
+deployare un'applicazione reale
+
+gestire infrastruttura Linux
+
+risolvere problemi tecnici reali
