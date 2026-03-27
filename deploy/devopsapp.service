@@ -1,0 +1,17 @@
+[Unit]
+Description=DevOps Flask API
+After=network.target
+
+[Service]
+User=dprandi
+WorkingDirectory=/var/www/devopsapp/backend
+
+#FLASK
+#ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
+
+#GUNICORN
+ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:5000 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
