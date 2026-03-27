@@ -12,7 +12,7 @@
 # il software che gira sul fisico è:
 
 #	- VMware 
-#	- Hypervisor 
+#   - Hypervisor 
 
 # il PC fisico esegue un hypervisor (VMware) che permette di creare macchine virtuali isolate, che si comportano come sistemi indipendenti.
 
@@ -318,31 +318,39 @@ gunicorn -w 4 -b 127.0.0.1:5000 app:app
 		
 		# Container → dentro hai già tutto pronto → lo avvii e basta
 		
-		
 
-source /var/www/devopsapp/backend/venv/bin/activate
 
-# TEST GUNICORN
+############	############	############		UNIX SOCKET 
 
-gunicorn -w 4 -b 127.0.0.1:5000 app:app
+# COSA HO FATTO FINO A ORA? 
+	
+	# sto comunicando via rete (TCP/IP) anche se sono sulla stessa macchina
 
-# ERRORE - FLASK GIA' IN ASCOLTO SU PORTA 5000
+# Il prossimo step: UNIX SOCKET
 
-sudo ss -tulnp | grep 5000
+# Adesso cambiamo COME comunicano i processi:
 
-sudo systemctl stop devopsapp
+# Prima: Nginx → HTTP → 127.0.0.1:5000 → Gunicorn -> Nginx bussa a una porta (5000)
 
-# riprovo
+# Dopo: Nginx → FILE (/run/devopsapp.sock) → Gunicorn -> Nginx lascia richieste dentro una cassetta fisica (file .sock)
+															# Gunicorn passa e le legge
 
-gunicorn -w 4 -b 127.0.0.1:5000 app:app 
+# cambia tutto:
 
-# e funziona
-
-# ora lo automatizzo con demone systemd 
+	# non passi più dalla rete
+	# passi dal filesystem
+	# è più veloce
+	# è più “da sistemista vero”
+	# niente rete, solo comunicazione interna alla macchina
+	
+# modifico GUNICORN
 
 sudo nano /etc/systemd/system/devopsapp.service
 
-# file INIZIO
+ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:5000 app:app
+
+
+#file corretto
 
 [Unit]
 Description=DevOps Flask API
@@ -350,35 +358,89 @@ After=network.target
 
 [Service]
 User=dprandi
+Group=www-data
+
 WorkingDirectory=/var/www/devopsapp/backend
+
+RuntimeDirectory=devopsapp
 
 #FLASK
 #ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
 
 #GUNICORN
-ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:>
+# ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:5000 app:app
+
+# UNIX SOCKET
+ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --workers 3 --bind unix:/run/devopsapp/devopsapp.sock app:app
+
 Restart=always
+
+# PERMESSI SOCKET
+# User=www-data
+# Group=www-data
+#OPPURE
 
 [Install]
 WantedBy=multi-user.target
 
-#file FINE 
 
+# PERMESSI SOCKET
 
+User=www-data
+Group=www-data
+
+# oppure (uso questi) 
+
+User=dprandi
+Group=www-data
+
+# Nginx gira come www-data, quindi deve poter leggere il socket
+
+sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
-
 sudo systemctl restart devopsapp
 
-sudo systemctl status devopsapp
+# CONTROLLO
 
-curl http://localhost
+ls /run/
+
+# e devo vedere
+
+devopsapp.sock
+
+# modifico NGINX /etc/nginx/sites-available/devopsapp
 
 
-systemd → Gunicorn → Flask
-           ↑
-        NGINX
-           ↑
-        Client
-		
-		
+
+#server {
+#       listen 80;
+#       server_name localhost;
+#
+#        location / {
+#        proxy_pass http://127.0.0.1:5000;
+#
+#        proxy_set_header Host $host;
+#        proxy_set_header X-Real-IP $remote_addr;
+#
+#        }
+#}
+
+
+
+# nuovo file (unix socket / gunicorn)
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://unix:/run/devopsapp/devopsapp.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+
+# ora il flusso è questo 
+
+Client → Nginx → UNIX SOCKET → Gunicorn → Flask
 
