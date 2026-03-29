@@ -444,3 +444,199 @@ server {
 
 Client → Nginx → UNIX SOCKET → Gunicorn → Flask
 
+# 26/03/2026 h: 15.30 
+
+
+# prendiamo questa strada (aziendale)
+
+# Docker backend
+# Nginx host
+# poi deploy style production
+
+
+
+cd $DEVOPSAPP_HOME/backend 
+
+# crea requirements.txt (se non ce l’hai)
+
+pip freeze > requirements.txt
+
+# crea Dockerfile
+
+nano Dockerfile
+
+# dentro metto
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:5000", "app:app"]
+
+
+# installo DOCKER
+
+sudo apt update && sudo apt install docker.io -y
+
+# avvio Docker
+sudo systemctl start docker
+
+# Abilito Docker all’avvio
+sudo systemctl enable docker
+
+docker --version
+
+# STEP IMPORTANTISSIMO (permessi): se provi a usare docker così, ti darà errore. Devi fare:
+
+sudo usermod -aG docker $USER
+
+# riavvio VM
+
+sudo reboot
+
+# Test finale: Se NON chiede sudo → sei a posto
+docker ps
+
+# Traduzione semplice: Docker = nuovo “motore” nella tua VM. lo hai appena installato. ora puoi creare container
+
+# poi vado in 'cd $DEVOPSAPP_HOME/backend' e faccio 
+
+docker build -t devopsapp-backend . 
+
+# quel . = usa QUESTA cartella
+
+# ora avvio il Container
+
+docker run -d \
+-p 127.0.0.1:5000:5000 \
+--name devopsapp \
+devopsapp-backend
+
+# test
+
+docker ps
+
+curl http://127.0.0.1:5000
+
+docker run (errore, no params)
+
+
+
+# ora collego nginx al container Docker
+
+sudo nano /etc/nginx/sites-available/devopsapp
+
+# aggiorno file
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+
+# guardo se funziona
+
+curl http://127.0.0.1
+
+# ricevo err 502 (backend non raggiungibile)
+
+docker ps
+
+# ho lista vuota: container non attivo 
+
+# rimettiamo SU il BACKEND
+
+docker rm -f devopsapp 2>/dev/null
+
+# lo avviamo 
+
+docker run -d \
+-p 127.0.0.1:5000:5000 \
+--restart always \
+--name devopsapp \
+devopsapp-backend
+
+# tutto ok. vedo il container con  
+
+docker ps 
+
+# adesso il comando funziona (nginx risponde) 
+
+curl http://127.0.0.1
+
+# FLUSSO: Client → Nginx → Docker → Gunicorn → Flask
+
+
+
+##########	DOCKER COMPOSE 	################
+
+
+
+# PRIMA: accendi ogni macchina a mano
+# Con compose: hai un quadro elettrico centrale
+
+METAFORA  (perfetta per capirlo)
+
+# systemd -> è il quadro elettrico della casa: accende le luci, gestisce gli impianti, tutto interno alla casa (OS)
+
+# docker-compose -> è il responsabile dei container/scatole, decide quali scatole usare, le accende tutte insieme, le collega tra loro
+
+# systemd gestisce i processi dell’host, docker-compose orchestra i container applicativi
+
+
+cd $DEVOPS_APP/backend
+
+# creo file COMPOSE
+
+nano docker-compose.yml
+
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: devopsapp
+    ports:
+      - "127.0.0.1:5000:5000"
+    restart: always
+	
+	
+# METAFORA: Cosa ho fatto? Ho scritto: “questo è il mio servizio backend”
+
+# build → usa Dockerfile
+# porta → 5000
+# restart → automatico
+
+
+# FERMO VECCHIO Container
+
+docker rm -f devopsapp
+
+# avvio con compose 
+
+docker compose up -d
+
+# faccio docker ps e devo vedere il container 
+
+docker ps
+
+# comandi IMPORTANTISSIMO
+
+docker compose down
+
+docker compose up -d
+
+
+# rebuild (quando cambio codice)
+
+docker compose up -d --build
