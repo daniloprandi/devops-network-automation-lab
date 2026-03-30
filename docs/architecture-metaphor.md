@@ -640,3 +640,102 @@ docker compose up -d
 # rebuild (quando cambio codice)
 
 docker compose up -d --build
+
+
+
+
+
+# ora il flusso è 
+
+
+
+# RETE DOCKER INTERNA = SALTO VERO
+
+# passo da 
+
+nginx → 127.0.0.1:5000
+
+# a 
+
+nginx → backend
+
+# senza localhost, senza porte esposte, comunicazione tra servizi
+
+# “I container comunicano tramite network Docker usando il nome del servizio come hostname”
+
+#FLUSSO ATTUALE
+
+Client → Nginx (container) → backend (container) → Gunicorn → Flask
+
+
+cd $DEVOPSAPP_HOME
+
+# creo cartella nginx
+
+mkdir nginx
+cd nginx
+nano default.conf
+
+#
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://backend:5000;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+
+# qui succede la magia:
+
+# backend:5000: NON è IP → è nome servizio Docker
+
+# modifico DOCKER COMPOSE
+
+cd /var/www/devopsapp/backend
+nano docker-compose.yml
+
+# COSA CAMBIA: expose → visibile SOLO dentro Docker | niente più 127.0.0.1 | nginx parla con backend
+
+# fermo tutto
+
+docker-compose down
+
+# avvio nuova architettura
+
+docker-compose up -d --build
+
+# verifico 
+
+docker ps
+
+# Devo vedere:
+
+devopsapp-backend
+devopsapp-nginx
+
+# errore porta 80 occupata
+
+sudo systemctl stop nginx
+
+# poi rilancio docker 
+
+docker-compose down
+docker-compose up -d --build
+
+# test 
+
+curl http://127.0.0.1
+
+# OK 
+
+# LEZIONE DEVOPS: quando containerizzi un servizio devi decidere chi “possiede” la porta
+
+# ora il flusso è 
+
+Client → Nginx (container) → backend (container)
+
