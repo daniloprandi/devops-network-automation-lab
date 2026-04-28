@@ -1,29 +1,39 @@
-# version: "3.9"
-
-# services:
-#  backend:
-#    build: .
-#    container_name: devopsapp
-#    ports:
-#      - "127.0.0.1:5000:5000"
-#    restart: always
-
 version: "3.9"
 
 services:
+
   backend:
-    build: .
-    container_name: devopsapp-backend
+    build: .  # build dell'immagine dal Dockerfile nella cartella corrente
+    container_name: devopsapp-backend  # nome container
     expose:
-      - "5000"
-    restart: always
+      - "5000"  # porta backend visibile solo dentro Docker
+    restart: always  # riavvio automatico
 
   nginx:
-    image: nginx:latest
-    container_name: devopsapp-nginx
+    image: nginx:latest  # immagine ufficiale nginx
+    container_name: devopsapp-nginx  # nome container
     ports:
-      - "80:80"
+      - "80:80"  # espone porta 80 verso l'esterno (client)
     volumes:
-      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf  # config nginx
     depends_on:
-      - backend
+      - backend  # nginx parte dopo backend
+
+  db:  # servizio database (hostname = "db" nella rete Docker)
+    image: postgres:15  # immagine PostgreSQL
+
+    environment:  # configurazione iniziale DB
+      POSTGRES_DB: devopsdb        # nome database
+      POSTGRES_USER: devopsuser    # utente
+      POSTGRES_PASSWORD: devopspassword  # password
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # persistenza dati
+
+    expose:
+      - "5432"  # porta DB solo interna Docker
+
+    restart: always  # riavvio automatico
+
+volumes:
+  postgres_data:  # volume per salvare dati DB
