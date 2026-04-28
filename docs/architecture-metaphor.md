@@ -739,3 +739,312 @@ curl http://127.0.0.1
 
 Client → Nginx (container) → backend (container)
 
+### 28/04/2026
+
+##### POSTGRES SQL #####
+
+- aggiungiamo il database in Docker
+- lo teniamo isolato (come backend)
+- lo rendiamo raggiungibile come db:5432
+
+# Config (docker-compose.yml)
+
+cd /var/www/devopsapp/backend
+
+db:  # definisco servizio database (nome = hostname "db" nella rete Docker)
+
+  image: postgres:15  # uso immagine ufficiale PostgreSQL versione 15
+
+  environment:  # variabili per inizializzare il DB
+    POSTGRES_DB: devopsdb        # nome database creato automaticamente
+    POSTGRES_USER: devopsuser    # utente DB
+    POSTGRES_PASSWORD: devopspassword  # password DB
+
+  volumes:
+    - postgres_data:/var/lib/postgresql/data  # persistenza dati (non si perdono al restart)
+
+  expose:
+    - "5432"  # porta DB visibile SOLO nella rete Docker (non verso esterno)
+
+volumes:
+  postgres_data:  # volume Docker usato per salvare i dati del database
+
+Perché? crei il DB dentro Docker (non esposto, solo interno)
+
+## AVVIO tutto
+
+ricostruiamo i container
+
+avviamo anche il DB
+
+allineiamo l’ambiente
+
+
+
+docker-compose down
+docker-compose up -d --build
+
+Perché? Docker prende la nuova config e crea il container DB
+
+entriamo in PostgreSQL
+
+verifichiamo che sia attivo
+
+testiamo accesso
+
+Comando
+
+docker exec -it backend_db_1 psql -U devopsuser -d devopsdb
+
+Perché? controlli che il DB sia realmente funzionante
+
+creo tabella
+
+Cosa facciamo
+
+creiamo dati veri
+prepariamo API
+testiamo DB
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    email TEXT,
+    domain TEXT
+);
+
+Perché? ti serve qualcosa da leggere via API
+
+inserisco dati
+
+Cosa facciamo
+
+mettiamo dati reali
+simuliamo backend
+testiamo query
+
+Comando
+
+INSERT INTO users (name, email, domain) VALUES ('Mario Rossi', 'mario@gmail.com', 'gmail.com'), ('Luca Bianchi', 'luca@libero.it', 'libero.it'), ('Anna Verdi', 'anna@outlook.com', 'outlook.com'), ('Paolo Neri', 'paolo@fastwebnet.it', 'fastwebnet.it');
+
+Perché? senza dati non vedi nulla dopo
+
+verifico
+
+Comando
+
+SELECT * FROM users;
+
+Perché? confermi che il DB funziona
+
+
+## COLLEGHIAMO FLASK AL DB - lavoro qui /var/www/devopsapp/backend
+
+leggiamo i dati reali
+
+esponiamo /users
+
+installa libreria
+
+pip install psycopg2-binary
+
+oppure aggiungilo a requirements.txt: -> FACCIO COSI 
+
+psycopg2-binary
+
+modifica app.py
+
+versione minimale funzionante:
+
+--
+
+import psycopg2
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+def get_db_connection():
+    return psycopg2.connect(
+        host="db",
+        database="devopsdb",
+        user="devopsuser",
+        password="devopspassword"
+    )
+
+@app.route("/users")
+def get_users():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT id, name, email, domain FROM users;")
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    users = []
+    for row in rows:
+        users.append({
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "domain": row[3]
+        })
+
+    return jsonify(users)
+
+--
+
+
+rebuild
+
+docker-compose down
+docker-compose up -d --build
+
+test
+
+curl http://127.0.0.1/users
+
+RISULTATO
+
+[
+  {"id":1,"name":"Mario Rossi",...},
+  ...
+]
+
+
+-- qui con filtro sul dominio -> app.py 
+
+# ===== SCRIPT VECCHIO (SENZA DATABASE) =====
+# from flask import Flask
+# app = Flask(__name__)
+#
+# @app.route("/")
+# def home():
+#     return "DevOps Lab API Running"
+#
+# Questo era il primo script:
+# - nessun database
+# - risposta statica
+# - solo test di funzionamento Flask
+
+
+# ===== SCRIPT NUOVO (CON DATABASE + FILTRO) =====
+
+import psycopg2  # libreria per connettersi a PostgreSQL
+from flask import Flask, jsonify, request  
+# Flask = framework web
+# jsonify = converte Python → JSON
+# request = legge parametri dalla URL (es. ?domain=...)
+
+app = Flask(__name__)  # crea l'app Flask
+
+
+def get_db_connection():
+    # funzione che apre connessione al database PostgreSQL
+
+    return psycopg2.connect(
+        host="db",  
+        # hostname Docker → nome servizio nel docker-compose (NON localhost)
+
+        database="devopsdb",  
+        # nome del database creato nel container PostgreSQL
+
+        user="devopsuser",  
+        # utente del database
+
+        password="devopspassword"  
+        # password del database
+    )
+
+
+@app.route("/users")  
+# endpoint API accessibile via:
+# http://localhost/users
+# oppure:
+# http://localhost/users?domain=gmail.com
+
+def get_users():
+
+    conn = get_db_connection()  
+    # apre connessione al database
+
+    cur = conn.cursor()  
+    # crea cursore → oggetto che esegue query SQL
+
+
+    # ===== VERSIONE VECCHIA (SENZA FILTRO) =====
+    # cur.execute("SELECT id, name, email, domain FROM users;")
+    # # prende tutti gli utenti dal database
+    #
+    # rows = cur.fetchall()
+    # # recupera tutte le righe risultato
+
+
+    # ===== VERSIONE NUOVA (CON FILTRO DINAMICO) =====
+
+    domain = request.args.get("domain")  
+    # legge parametro dalla URL:
+    # /users?domain=gmail.com
+    # se non presente → None
+
+    if domain:
+        # se è presente il parametro domain
+
+        cur.execute(
+            "SELECT id, name, email, domain FROM users WHERE domain = %s;",
+            (domain,)
+        )
+        # query SQL filtrata
+        # %s = placeholder (sicuro → evita SQL injection)
+        # (domain,) = valore passato alla query
+
+    else:
+        # se NON è presente filtro
+
+        cur.execute("SELECT id, name, email, domain FROM users;")
+        # prende tutti gli utenti
+
+
+    rows = cur.fetchall()  
+    # prende risultati della query (filtrati o completi)
+
+
+    cur.close()  
+    # chiude cursore
+
+    conn.close()  
+    # chiude connessione DB
+
+
+    users = []  
+    # lista vuota per costruire risposta JSON
+
+    for row in rows:  
+        # per ogni riga del database
+
+        users.append({
+            "id": row[0],        # colonna id
+            "name": row[1],      # colonna name
+            "email": row[2],     # colonna email
+            "domain": row[3]     # colonna domain
+        })
+
+
+    # ===== RISPOSTA API =====
+    return jsonify(users)  
+    # restituisce JSON al client
+    # (filtrato se ?domain=... presente, altrimenti completo)
+	
+	
+
+curl "http://127.0.0.1/users?domain=gmail.com"
+
+
+--
+
+cosi aggiungo user (POST)
+
+curl -X POST http://127.0.0.1/users \
+-H "Content-Type: application/json" \
+-d '{"name":"Marco Test","email":"marco@gmail.com","domain":"gmail.com"}'
