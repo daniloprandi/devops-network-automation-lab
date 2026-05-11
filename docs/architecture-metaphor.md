@@ -1,481 +1,520 @@
-# RAPPRESENTAZIONE VISIVA DEL MIO PROGETTO DEVOPS
+RAPPRESENTAZIONE VISIVA DEL MIO PROGETTO DEVOPS
 
+io parto da una struttura che è il mio studio (immagina 12 m2 di stanza)
 
-# io parto da una struttura che è il mio studio (immagina 12 m2 di stanza)
-# È COME SE FOSSE IL MIO PC FISICO
+E' come se fosse il mio PC FISICO
 
-###
+Su questo PC FISICO installo VMWARE. 
 
-# su questo pc fisico installo VMWARE. 
-# VMWARE HA UN HYPERVISOR CHE MI PERMETTE DI CREARE MACCHINE VIRTUALI
+VMWARE ha un HYPERVISOR che mi permette di creare MACCHINE VIRTUALI
 
-# il software che gira sul fisico è:
+Il software che gira sul PC FISICO è:
 
-#	- VMware 
-#   - Hypervisor 
+- VMware
+- Hypervisor
 
-# il PC fisico esegue un hypervisor (VMware) che permette di creare macchine virtuali isolate, che si comportano come sistemi indipendenti.
+il PC FISICO esegue un HYPERVISOR (VMWARE) che permette di creare macchine virtuali isolate, che si comportano come SISTEMI indipendenti.
 
-###
+Adesso sono ancora sul mio PC FISICO. 
 
-# per il momento sono ancora sul mio pc fisico. non sto virtualizzando niente
+Non sto virtualizzando niente
 
-###
+Adesso creo la mia VM 'server-lab-01'
 
-# creo la mia VM server-lab-01
-# è come se progettassi di aggiungere una stanza al mio studio
-# è una stanza virtuale, non la costruisco veramente (è appunto virtuale)
+E' come se progettassi di aggiungere una stanza al mio studio
 
-###
+E' una stanza virtuale, non la costruisco veramente (è, appunto, virtuale)
 
-# creo la VM, metto LINUX SERVER ed è come se ora oltre al mio studio avessi una stanza in più (virtuale)
-# quindi ora la mia casa diventa studio + stanza virtuale
+Creo la VM ed è come se ora, oltre al mio studio, avessi una stanza in + (virtuale)
 
-	## - Il mio PC fisico = studio
-	## - La VM = nuova stanza (virtuale) dentro casa
+Quindi ora la mia casa diventa studio + stanza virtuale
 
-# Non è un altro edificio: usa le stesse risorse (CPU, RAM, disco) ma è isolata come se fosse separata
+## - Il mio PC FISICO = studio
 
-###
+## - La VM che creo con il mio PC FISICO = nuova stanza (virtuale) dentro casa
 
-# Traduzione tecnica
-# - Studio = PC fisico (hw reale)
-# - Stanza virtuale (VM) = server-lab-01 -> ambiente isolato dove gira LINUX SERVER
-# - Casa = Studio + VM
+Non è un altro edificio: usa le stesse risorse (CPU, RAM, disco) ma è isolata ed è come se fosse separata
 
-###
+Traduzione tecnica
 
-# dentro la VM ho messo LINUX SERVER
-# è un sistema operativo su cui girano programmi che servono un CLIENT
-# è un sistema operativo che permette ai servizi di girare e rispondere ai CLIENT
-# questi servizi / programmi sono ad esempio NGINX e FLASK 
+- Studio = PC fisico (hw reale)
+- Stanza virtuale (VM) = server-lab-01 -> ambiente isolato dove gira LINUX SERVER
+- Casa = Studio + VM
 
-###
+Dentro la VM ho messo LINUX SERVER
 
-# Il CLIENT è QUALSIASI cosa che fa una richiesta al tuo SERVER (VM server-lab-01) ad esempio:
+LINUX SERVER è un sistema operativo su cui girano programmi che servono un CLIENT
 
-	# - curl
-	# - browser
-	# - un altro SERVER: un frontend chiama una API oppure un microservizio chiama un altro servizio
-	# - un APP mobile sul cel che chiama un BACKEND (FLASK API)
+LINUX SERVER permette ai servizi di girare e rispondere ai CLIENT (esempi di CLIENT: curl, browser)
 
-### CLIENT = programma che genera e invia una richiesta (in genere e nel mio caso HTTP) a un SERVER ###
+questi servizi / programmi sono ad esempio NGINX e FLASK
 
-# io sono l’umano che usa questi CLIENT 
+CLIENT = programma che genera e invia una richiesta (in genere e nel mio caso HTTP) a un SERVER 
 
-###
+Io sono l’umano che usa questi CLIENT
 
-# LOCALHOST = l’indirizzo con cui un CLIENT parla a servizi sulla stessa macchina
+Il CLIENT è qualsiasi cosa che fa una richiesta al SERVER 'server-lab-01', ad esempio:
 
-#####	NGINX 	####
+# curl
 
+# browser
 
-# la prima cosa che ho installato è NGINX
+# un altro SERVER: un frontend chiama una API oppure un microservizio chiama un altro servizio
 
-# NGINX è un WEB SERVER e un REVERSE PROXY che riceve richieste dai CLIENT e le inoltra ai servizi (interni o esterni - e per esterni 
-# si intende altre VM / PROGRAMMI / SERVIZI / BACKEND nella mia LAN o sull'internet globale - ), restituendo poi la risposta al CLIENT'
+# un APP mobile sul cel che chiama un BACKEND (FLASK API)
 
-# NGINX ha un file di configurazione che si trova in '/etc/nginx/nginx.conf' configurato per ascoltare e ricevere 
-# richieste HTTP sulla porta 80. 
+LOCALHOST = nome che identifica la MACCHINA stessa; viene risolto nell’indirizzo di loopback (127.0.0.1 in IPv4, ::1 in IPv6) 
 
-# test NGINX: curl http://127.0.0.1
+LOCALHOST indica che la comunicazione resta interna al sistema, senza uscire sulla rete. 
 
+LOCALHOST usa l’interfaccia di loopback, che su Linux si chiama 'lo'
 
-##
 
-# NGINX è un carrello (intelligente) all’ingresso della mia stanza virtuale (VM) che riceve le richieste dei CLIENT, decide come gestirle 
-# (rispondere direttamente o inoltrarle al backend) e restituisce la risposta al CLIENT
-# Nel mio caso NGINX inoltra le richieste a un servizio interno alla VM (FLASK) e restituisce la risposta
 
-##
+################################################
 
-# poi abbiamo installato FLASK 
+###### 			NGINX		 ###########################
 
-# FLASK è una CASSETTA DEGLI ATTREZZI per costruire BACKEND web (API HTTP) in Python
+################################################
 
-# FLASK è un micro web framework in Python che permette di creare applicazioni web e API HTTP, gestendo richieste e generando 
-# risposte tramite codice Python
 
-# FLASK è il componente che:
-  #	- ascolta su una porta (5000)
-  #	- riceve richieste HTTP
-  #	- le associa a funzioni Python (routing)
-  #	- esegue la logica
-  #	- restituisce una risposta (stringa o JSON)
+NGINX (primo strumento che ho installato) = è un WEB SERVER e un REVERSE PROXY che riceve le richieste dai CLIENT, le gestisce e le inoltra al BACKEND, proteggendolo (il BACKEND) e migliorando le prestazioni. 
 
+NGINX nasconde PORTE, STRUTTURA INTERNA e SERVIZI del BACKEND
 
+NGINX filtra, instrada e protegge
 
-###
+NGINX riceve le richieste dei CLIENT e le inoltra ai servizi (interni o esterni: esterni = altre VM / PROGRAMMI / SERVIZI / BACKEND nella mia LAN o sull'internet globale - ), restituendo poi la risposta al CLIENT'
 
-# poi abbiamo creato un'API
+NGINX ha un file di configurazione che si trova in '/etc/nginx/nginx.conf' configurato per ascoltare e ricevere richieste HTTP 
+sulla porta 80.
 
-# Una API (Application Programming Interface) è un insieme di regole, endpoint e formati che permette a un software (client) di comunicare 
-# con un altro software (server) per richiedere ed ottenere dati o operazioni.# # #  # #  
+*** test NGINX: curl http://127.0.0.1 ***
 
+NGINX è un CARRELLO (intelligente) all’interno della mia VM (e successivamente sarà spostato dentro DOCKER) che riceve le richieste dei CLIENT, decide come gestirle (rispondere direttamente o inoltrarle al backend) e restituisce la risposta al CLIENT
 
-# METAFORA: API è il “modo ufficiale” con cui puoi parlare con un servizio. Un’API è il contratto di comunicazione tra CLIENT e SERVE# R### Un ENDPOINT è un indirizzo specifico della tua API dove un CLIENT può f# are una richiesta.
 
-# È una combinazione di:
+poi abbiamo installato FLASK
 
- # - URL → /users
 
- # - metodo HTTP → GET, POST, ecc.
+################################################
 
+###### 			FLASK		 ###########################
 
-####	#####	#####	#####
+################################################
 
-# SYSTEMD = primo processo (PID 1) che parte all’avvio e gestisce tutti gli altri servizi.
 
-###
+FLASK è una CASSETTA DEGLI ATTREZZI per costruire BACKEND web (API che usano HTTP) in Python 
 
-# Prima di SYSTEMD, il mio flusso era manuale:
+FLASK è una CASSETTA DEGLI ATTREZZI con cui costruisco un COMODINO (l’API) e definisco come deve funzionare
 
- # - Entravo nella VM
- # 
- # - Attivavi l’ambiente: 
- 
- source /var/www/devopsapp/backend/venv/bin/activate
+FLASK è un MICRO WEB FRAMEWORK in Python che permette di creare applicazioni web e API (che usano HTTP), gestendo richieste e generando
+risposte tramite codice Python
 
-# Avviavo FLASK: 
+FLASK è il componente che:
 
- python app.py
+- ascolta su una porta (5000)
 
-# Tradotto: ogni volta dovevo “accendere a mano” il backend
+- riceve richieste HTTP
 
-# Ed è proprio il problema che SYSTEMD risolve
+- le associa a funzioni Python (routing)
 
-###
+- esegue la logica
 
-# Configurazione essenziale che ho fatto:
+- restituisce una risposta (stringa o JSON)
 
-# Creazione service file
-sudo nano /etc/systemd/system/devopsapp.service
-# Contenuto (logica)
-# definisco utente
-# definisco path progetto
-# faccio partire FLASK con Python del venv
+poi abbiamo creato un'API
 
-#struttura:
 
-# file inizio
 
+################################################
 
-[Unit]
-Description=DevOps Flask App
-After=network.target
+###### 			API		 #############################
 
-[Service]
-User=dprandi
-WorkingDirectory=/var/www/devopsapp/backend
-ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
-Restart=always
+################################################
 
-[Install]
-WantedBy=multi-user.target
- 
-# file fine 
 
 
-# Ricarichi systemd
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
+API (Application Programming Interface) = insieme di regole, ENDPOINT e formati (JSON, YAML, XML) che permette a un software (CLIENT) di comunicare con un altro software (SERVER) per richiedere ed ottenere dati o operazioni
 
+Un’API espone ENDPOINT accessibili tramite HTTP, permettendo ai CLIENT di inviare richieste e ricevere risposte strutturate, tipicamente in formato JSON.
 
-# Avvio
-sudo systemctl start devopsapp
+Un’API è il COMODINO che espone dei CASSETTI (ENDPOINT) attraverso cui il CLIENT può chiedere qualcosa al sistema
 
-# Abilitazione al boot
-sudo systemctl enable devopsapp
+API è il "modo ufficiale" con cui puoi parlare con un servizio. 
 
-# Tradotto nella tua metafora
+API è il contratto di comunicazione tra CLIENT e SERVER
 
-# systemd = il “gestore automatico” della macchina
-# invece di avviare Flask a mano, gli dici:
-# “quando si accende tutto, fallo partire tu”
+ENDPOINT = indirizzo specifico della tua API dove un CLIENT può fare una richiesta.
 
+ENDPOINT = punto di accesso specifico di un’API, identificato da un URL e un metodo HTTP, attraverso cui un CLIENT può richiedere una determinata operazione.
 
+ENDPOINT = punto di accesso a una funzionalità dell’API, identificato da un URL e un metodo HTTP.
 
-######	######		GUNICORN	######	######
+È una combinazione di:
 
-# Gunicorn è un application server WSGI che esegue applicazioni Python (es. Flask) in modo stabile e scalabile per ambienti di 
-# produzione. 
+- URL → /users
 
-# Flask = il tuo codice (app)
+- metodo HTTP → GET, POST, ecc. 
 
-# Gunicorn = il motore che lo esegue in modo serio
 
-# Gestisce:
 
-	# più richieste insieme (worker)
-	# stabilità
-	# processi
 
+################################################
 
-# METAFORA
-	# Flask (dev server) = un impiegato da solo alla scrivania
+###### 			LINUX SERVER		 ###################
 
-	# Gunicorn = un ufficio con più impiegati coordinati
+################################################
 
-	# NGINX = il portinaio che smista le persone
 
+SYSTEMD = primo processo (PID 1) che parte all’avvio e gestisce tutti gli altri servizi
 
-# Differenza chiave Flask vs Gunicorn
+Prima di SYSTEMD, il mio flusso era manuale:
 
-	# Flask (quando fai python app.py)
-		
-		# server di sviluppo
-		
-		# 1 richiesta alla volta
+- Entravo nella VM
 
-		# non stabile sotto carico
-		
-		# non sicuro per produzione
+- Attivavo l’ambiente: 'source /var/www/devopsapp/backend/venv/bin/activate'
 
-		# serve per sviluppare
+- Avviavo FLASK: 'python app.py'
 
-	# Gunicorn
+***		Tradotto: ogni volta dovevo “accendere a mano” il backend		***
 
-		# più worker (processi)
-		
-		# gestisce più richieste contemporaneamente
+E' proprio il problema che SYSTEMD risolve
 
-		# stabile
+Configurazione essenziale che ho fatto:
 
-		# usato in produzione
+- Creazione service file 'sudo nano /etc/systemd/system/devopsapp.service'
 
-		# serve per far girare davvero l’app
+Contenuto (logica)
 
-# Flusso corretto in produzione
+- definisco utente
+
+- definisco path progetto
+
+- faccio partire FLASK con Python del venv
+
+Struttura del file 'devopsapp.service':
+
+***		INIZIO		***
+
+[Unit] Description=DevOps Flask App After=network.target
+
+[Service] User=dprandi WorkingDirectory=/var/www/devopsapp/backend ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py Restart=always
+
+[Install] WantedBy=multi-user.target
+
+***		FINE		***
+
+RICARICO processo 'systemd' (PID 1)con comando 'sudo systemctl daemon-reexec sudo systemctl daemon-reload'
+
+Lo AVVIO 'sudo systemctl start devopsapp'
+
+Lo abilito al BOOT 'sudo systemctl enable devopsapp'
+
+***		Tradotto		*** 
+
+systemd = il “gestore automatico” della macchina
+
+invece di avviare Flask a mano, gli dico: 'quando si accende tutto, fallo partire tu'
+
+
+
+################################################
+
+###### 			GUNICORN		 ###################
+
+################################################
+
+
+
+GUNICORN = Application Server WSGI che esegue applicazioni Python (es. FLASK) in modo stabile e scalabile per ambienti di produzione.
+
+FLASK = il mio codice (app)
+
+GUNICORN = il MOTORE che esegue il codice FLASK in modo serio
+
+GUNICORN gestisce:
+
+# più richieste / processi insieme (worker)
+
+# stabilità
+
+# processi
+
+METAFORA
+
+# Flask (dev server) = un impiegato da solo alla scrivania
+
+# Gunicorn = un ufficio con più impiegati coordinati
+
+# NGINX = il portinaio che smista le persone
+
+***		Differenza chiave FLASK vs GUNICORN		***
+
+# FLASK (quando fai python app.py)
 	
-	# Client → NGINX → Gunicorn → Flask (app)
+	# server di sviluppo
+	
+	# 1 richiesta alla volta
 
-# Frase forte
+	# non stabile sotto carico
+	
+	# non sicuro per produzione
 
-	# Flask definisce l’app, Gunicorn la esegue in modo scalabile, NGINX la espone al mondo
+	# serve per sviluppare
 
-# Errore classico (importantissimo)
+# GUNICORN
 
-	# NON usare mai python app.py in produzione
+	# più worker (processi)
+	
+	# gestisce più richieste contemporaneamente
 
-# Nel mio lab (step successivo naturale) al posto di:
+	# stabile
+
+	# usato in produzione
+
+	# serve per far girare davvero l’app
+	
+	
+Flusso corretto in produzione -> 'Client 	→ 	NGINX 	→ 	Gunicorn 	→ 	Flask (app)'
+
+FRASE FORTE
+
+# FLASK definisce l’app
+
+# GUNICORN la esegue in modo scalabile
+
+# NGINX la espone al mondo
+
+ERRORE CLASSICO (IMPORTANTISSIMO): NON usare mai 'python app.py' in produzione
+
+Nel mio lab (step successivo naturale) al posto di:
 
 python app.py
 
-# userò:
+userò:
 
 gunicorn -w 4 -b 127.0.0.1:5000 app:app
 
 
+################################################
 
-######	######		DOCKER	######	######
+###### 			DOCKER		 #########################
+
+################################################
 
 
-# Docker è una piattaforma che permette di creare, distribuire ed eseguire applicazioni in contenitori (container) isolati e portabili.
+
+DOCKER = piattaforma che permette di creare, distribuire ed eseguire applicazioni in contenitori (CONTAINER) isolati e portabili.
+
+Cosa fa in pratica
+
+# prende la tua applicazione + dipendenze  
+
+# le 'impacchetta' in un CONTAINER  
+
+# la fa girare uguale ovunque (VM, server, cloud)
 
 
-# Cosa fa in pratica
+CONTAINER = ambiente isolato leggero dove gira la mia app
+
+Metafora
+
+#  Senza DOCKER -> ogni SERVER è diverso → 'funziona solo sul mio PC'
+ 
+#  Con DOCKER -> è come una scatola standardizzata  
+
+#  dentro c’è tutto (app + librerie)  
+
+#  la porti ovunque e funziona uguale
+
+Frase chiave
+
+DOCKER elimina il problema 'sul mio computer funziona' rendendo l’app portabile e replicabile
+
+Collegamento al lab
+
+Prima:
+
+# VM → installi Python → venv → Flask → config manuale
+
+# Con DOCKER:
 	
-	# prende la tua applicazione + dipendenze  
+	# Container → dentro hai già tutto pronto → lo avvii e basta
 	
-	# le “impacchetta” in un container  
 	
-	# la fa girare uguale ovunque (VM, server, cloud)
-
-
-# Concetto chiave
-
-	# container = ambiente isolato leggero dove gira la tua app
-
-
-
-# Metafora
 	
-	#  Senza Docker:
-	
-	#  ogni server è diverso → “funziona solo sul mio PC”
-	 
-	#  Con Docker:
-	
-	#  è come una scatola standardizzata  
-	
-	#  dentro c’è tutto (app + librerie)  
-	
-	#  la porti ovunque e funziona uguale
+################################################
+
+###### 			UNIX SOCKET		 #####################
+
+################################################
 
 
-# Frase chiave
 
-# Docker elimina il problema “sul mio computer funziona” rendendo l’app portabile e replicabile
+COSA HO FATTO FINO A ORA?
+
+# sto comunicando via rete (TCP/IP) anche se sono sulla stessa macchina (VM)
+
+Il prossimo step: UNIX SOCKET
+
+Adesso cambiamo COME comunicano i processi:
+
+Prima: 
+
+'Nginx 		-> 		HTTP 		-> 		127.0.0.1:5000 		-> 		Gunicorn 		-> 		Nginx bussa a una porta (5000)'
+
+Dopo:		
+
+'Nginx 		-> 		FILE (/run/devopsapp.sock) 		-> 	Gunicorn 		-> 		Nginx lascia richieste dentro una cassetta fisica (file .sock)
+
+-> 	 Gunicorn passa e le legge'
 
 
-# Collegamento al lab
+cambia tutto:
 
-# Prima:
-	
-	# VM → installi Python → venv → Flask → config manuale
+# non passi più dalla rete
 
-	# Con Docker:
-		
-		# Container → dentro hai già tutto pronto → lo avvii e basta
-		
+# passi dal filesystem
 
+# è più veloce
 
-############	############	############		UNIX SOCKET 
+# è più 'da sistemista vero'
 
-# COSA HO FATTO FINO A ORA? 
-	
-	# sto comunicando via rete (TCP/IP) anche se sono sulla stessa macchina
+# niente rete, solo comunicazione interna alla macchina
 
-# Il prossimo step: UNIX SOCKET
-
-# Adesso cambiamo COME comunicano i processi:
-
-# Prima: Nginx → HTTP → 127.0.0.1:5000 → Gunicorn -> Nginx bussa a una porta (5000)
-
-# Dopo: Nginx → FILE (/run/devopsapp.sock) → Gunicorn -> Nginx lascia richieste dentro una cassetta fisica (file .sock)
-															# Gunicorn passa e le legge
-
-# cambia tutto:
-
-	# non passi più dalla rete
-	# passi dal filesystem
-	# è più veloce
-	# è più “da sistemista vero”
-	# niente rete, solo comunicazione interna alla macchina
-	
-# modifico GUNICORN
+modifico GUNICORN
 
 sudo nano /etc/systemd/system/devopsapp.service
 
 ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:5000 app:app
 
-
 #file corretto
 
-[Unit]
-Description=DevOps Flask API
-After=network.target
+[Unit] Description=DevOps Flask API After=network.target
 
-[Service]
-User=dprandi
-Group=www-data
+[Service] User=dprandi Group=www-data
 
 WorkingDirectory=/var/www/devopsapp/backend
 
 RuntimeDirectory=devopsapp
 
-#FLASK
-#ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
+#FLASK #ExecStart=/var/www/devopsapp/backend/venv/bin/python app.py
 
 #GUNICORN
-# ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:5000 app:app
 
-# UNIX SOCKET
+ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --chdir /var/www/devopsapp/backend --workers 4 --bind 127.0.0.1:5000 app:app
+UNIX SOCKET
 ExecStart=/var/www/devopsapp/backend/venv/bin/gunicorn --workers 3 --bind unix:/run/devopsapp/devopsapp.sock app:app
 
 Restart=always
 
-# PERMESSI SOCKET
-# User=www-data
-# Group=www-data
-#OPPURE
-
-[Install]
-WantedBy=multi-user.target
-
-
-# PERMESSI SOCKET
-
+PERMESSI SOCKET
 User=www-data
 Group=www-data
 
-# oppure (uso questi) 
+#OPPURE
 
-User=dprandi
-Group=www-data
+[Install] WantedBy=multi-user.target
 
-# Nginx gira come www-data, quindi deve poter leggere il socket
+PERMESSI SOCKET
+User=www-data Group=www-data
 
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl restart devopsapp
+oppure (uso questi)
+User=dprandi Group=www-data
 
-# CONTROLLO
+Nginx gira come www-data, quindi deve poter leggere il socket: 'sudo systemctl daemon-reexec sudo systemctl daemon-reload sudo systemctl' 
 
+restart devopsapp
+
+CONTROLLO
 ls /run/
 
-# e devo vedere
-
+e devo vedere
 devopsapp.sock
 
-# modifico NGINX /etc/nginx/sites-available/devopsapp
-
-
+modifico NGINX /etc/nginx/sites-available/devopsapp
 
 #server {
-#       listen 80;
-#       server_name localhost;
-#
-#        location / {
-#        proxy_pass http://127.0.0.1:5000;
-#
-#        proxy_set_header Host $host;
-#        proxy_set_header X-Real-IP $remote_addr;
-#
-#        }
+
+listen 80;
+server_name localhost;
+location / {
+proxy_pass http://127.0.0.1:5000;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+}
 #}
 
+nuovo file (unix socket / gunicorn)
+server { listen 80;
 
-
-# nuovo file (unix socket / gunicorn)
-
-server {
-    listen 80;
-
-    location / {
-        proxy_pass http://unix:/run/devopsapp/devopsapp.sock;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+location / {
+    proxy_pass http://unix:/run/devopsapp/devopsapp.sock;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
 }
 
-
-# ora il flusso è questo 
-
+ora il flusso è questo
 Client → Nginx → UNIX SOCKET → Gunicorn → Flask
 
-# 26/03/2026 h: 15.30 
 
 
-# prendiamo questa strada (aziendale)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!!!!			QUI DEVO VEDERE BENE 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+prendiamo questa strada (aziendale)
 
 # Docker backend
+
 # Nginx host
-# poi deploy style production
 
+poi deploy style production
 
+cd $DEVOPSAPP_HOME/backend
 
-cd $DEVOPSAPP_HOME/backend 
-
-# crea requirements.txt (se non ce l’hai)
+crea file 'requirements.txt' (se non ce l’hai)
 
 pip freeze > requirements.txt
 
-# crea Dockerfile
+crea Dockerfile
 
 nano Dockerfile
 
-# dentro metto
+dentro metto
+
+
+
+*** INIZIO FILE ***
+
 
 FROM python:3.11-slim
+# usa immagine base Python leggera (OS + Python già pronto)
 
 WORKDIR /app
+# crea/imposta cartella di lavoro interna al container
 
 COPY . .
+# copia tutti i file del progetto locale dentro /app del container
 
 RUN pip install --no-cache-dir -r requirements.txt
+# installa dipendenze Python (Flask, psycopg2, gunicorn...)
 
 CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:5000", "app:app"]
+# avvia Gunicorn:
+# -w 3 = 3 worker/processi
+# -b = ascolta su porta 5000 su tutte le interfacce
+# app:app = file app.py -> oggetto Flask chiamato app
+
+
+*** FINE FILE ***
 
 
 # installo DOCKER
@@ -483,14 +522,16 @@ CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:5000", "app:app"]
 sudo apt update && sudo apt install docker.io -y
 
 # avvio Docker
+
 sudo systemctl start docker
 
 # Abilito Docker all’avvio
+
 sudo systemctl enable docker
 
 docker --version
 
-# STEP IMPORTANTISSIMO (permessi): se provi a usare docker così, ti darà errore. Devi fare:
+###	STEP IMPORTANTISSIMO (permessi): se provi a usare docker così, ti darà errore. Devi fare:
 
 sudo usermod -aG docker $USER
 
@@ -499,22 +540,44 @@ sudo usermod -aG docker $USER
 sudo reboot
 
 # Test finale: Se NON chiede sudo → sei a posto
+
 docker ps
 
-# Traduzione semplice: Docker = nuovo “motore” nella tua VM. lo hai appena installato. ora puoi creare container
+# Traduzione semplice: Docker = nuovo “motore” nella tua VM. lo hai appena installato. ora puoi creare CONTAINER
 
-# poi vado in 'cd $DEVOPSAPP_HOME/backend' e faccio 
+# poi vado in 'cd $DEVOPSAPP_HOME/backend' e faccio
 
-docker build -t devopsapp-backend . 
+docker build -t devopsapp-backend .
 
 # quel . = usa QUESTA cartella
 
 # ora avvio il Container
 
+
+--
+
+# avvio il container backend in background
 docker run -d \
+
+# -d = detached mode → gira in background
+
 -p 127.0.0.1:5000:5000 \
+
+# mappa porta host → container
+
+# host VM: 127.0.0.1:5000
+
+# container: porta 5000 (Gunicorn/Flask)
+
 --name devopsapp \
+
+# assegna nome al container
+
 devopsapp-backend
+
+# nome dell'immagine Docker creata con docker build
+
+--
 
 # test
 
@@ -522,9 +585,7 @@ docker ps
 
 curl http://127.0.0.1:5000
 
-docker run (errore, no params)
-
-
+# docker run (errore, no params)
 
 # ora collego nginx al container Docker
 
@@ -532,15 +593,14 @@ sudo nano /etc/nginx/sites-available/devopsapp
 
 # aggiorno file
 
-server {
-    listen 80;
+server { listen 80;
 
-    location / {
-        proxy_pass http://127.0.0.1:5000;
+location / {
+    proxy_pass http://127.0.0.1:5000;
 
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
 }
 
 
@@ -548,52 +608,64 @@ server {
 
 curl http://127.0.0.1
 
+
 # ricevo err 502 (backend non raggiungibile)
 
 docker ps
 
-# ho lista vuota: container non attivo 
+# ho lista vuota: container non attivo
 
 # rimettiamo SU il BACKEND
 
 docker rm -f devopsapp 2>/dev/null
 
-# lo avviamo 
+# lo avviamo
 
-docker run -d \
--p 127.0.0.1:5000:5000 \
---restart always \
---name devopsapp \
+docker run -d
+-p 127.0.0.1:5000:5000
+--restart always
+--name devopsapp
 devopsapp-backend
 
-# tutto ok. vedo il container con  
+# tutto ok. vedo il container con
 
-docker ps 
+docker ps
 
-# adesso il comando funziona (nginx risponde) 
-
+adesso il comando funziona (nginx risponde)
 curl http://127.0.0.1
 
-# FLUSSO: Client → Nginx → Docker → Gunicorn → Flask
+FLUSSO: 'Client 	→ 	Nginx 	→ 	Docker 	→ 	Gunicorn 	→ 	Flask
 
 
 
-##########	DOCKER COMPOSE 	################
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!			RIPRENDERE DA QUI 			!!!!!!!!!!!!!!!!!!!!!!!
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+########## DOCKER COMPOSE ################  !!! RIP DA QUI !!!
 
 # PRIMA: accendi ogni macchina a mano
+
 # Con compose: hai un quadro elettrico centrale
 
-METAFORA  (perfetta per capirlo)
+METAFORA (perfetta per capirlo)
 
-# systemd -> è il quadro elettrico della casa: accende le luci, gestisce gli impianti, tutto interno alla casa (OS)
+systemd -> è il quadro elettrico della casa: accende le luci, gestisce gli impianti, tutto interno alla casa (OS)
 
-# docker-compose -> è il responsabile dei container/scatole, decide quali scatole usare, le accende tutte insieme, le collega tra loro
+docker-compose -> è il responsabile dei container/scatole, decide quali scatole usare, le accende tutte insieme, le collega tra loro
 
-# systemd gestisce i processi dell’host, docker-compose orchestra i container applicativi
-
-
+systemd gestisce i processi dell’host, docker-compose orchestra i container applicativi
 cd $DEVOPS_APP/backend
 
 # creo file COMPOSE
@@ -602,93 +674,70 @@ nano docker-compose.yml
 
 version: "3.9"
 
-services:
-  backend:
-    build: .
-    container_name: devopsapp
-    ports:
-      - "127.0.0.1:5000:5000"
-    restart: always
-	
-	
-# METAFORA: Cosa ho fatto? Ho scritto: “questo è il mio servizio backend”
-
-# build → usa Dockerfile
-# porta → 5000
-# restart → automatico
+services: backend: build: . container_name: devopsapp ports: - "127.0.0.1:5000:5000" restart: always
 
 
-# FERMO VECCHIO Container
+
+METAFORA: Cosa ho fatto? Ho scritto: “questo è il mio servizio backend”
+
+build → usa Dockerfile
+
+porta → 5000
+
+restart → automatico
+
+FERMO VECCHIO Container
 
 docker rm -f devopsapp
 
-# avvio con compose 
+avvio con compose
 
 docker compose up -d
 
-# faccio docker ps e devo vedere il container 
+faccio docker ps e devo vedere il container
 
 docker ps
 
-# comandi IMPORTANTISSIMO
+comandi IMPORTANTISSIMO
 
 docker compose down
 
 docker compose up -d
 
-
-# rebuild (quando cambio codice)
+rebuild (quando cambio codice)
 
 docker compose up -d --build
 
+ora il flusso è
 
+RETE DOCKER INTERNA = SALTO VERO
 
-
-
-# ora il flusso è 
-
-
-
-# RETE DOCKER INTERNA = SALTO VERO
-
-# passo da 
-
+passo da
 nginx → 127.0.0.1:5000
 
-# a 
-
+a
 nginx → backend
 
-# senza localhost, senza porte esposte, comunicazione tra servizi
-
-# “I container comunicano tramite network Docker usando il nome del servizio come hostname”
-
+senza localhost, senza porte esposte, comunicazione tra servizi
+“I container comunicano tramite network Docker usando il nome del servizio come hostname”
 #FLUSSO ATTUALE
 
 Client → Nginx (container) → backend (container) → Gunicorn → Flask
 
-
 cd $DEVOPSAPP_HOME
 
-# creo cartella nginx
+creo cartella nginx
+mkdir nginx cd nginx nano default.conf
 
-mkdir nginx
-cd nginx
-nano default.conf
+server { listen 80;
 
-#
+location / {
+    proxy_pass http://backend:5000;
 
-server {
-    listen 80;
-
-    location / {
-        proxy_pass http://backend:5000;
-
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
 }
-
+}
 
 # qui succede la magia:
 
@@ -709,7 +758,7 @@ docker-compose down
 
 docker-compose up -d --build
 
-# verifico 
+# verifico
 
 docker ps
 
@@ -722,20 +771,20 @@ devopsapp-nginx
 
 sudo systemctl stop nginx
 
-# poi rilancio docker 
+# poi rilancio docker
 
 docker-compose down
 docker-compose up -d --build
 
-# test 
+# test
 
 curl http://127.0.0.1
 
-# OK 
+# OK
 
 # LEZIONE DEVOPS: quando containerizzi un servizio devi decidere chi “possiede” la porta
 
-# ora il flusso è 
+# ora il flusso è
 
 Client → Nginx (container) → backend (container)
 
@@ -848,7 +897,7 @@ installa libreria
 
 pip install psycopg2-binary
 
-oppure aggiungilo a requirements.txt: -> FACCIO COSI 
+oppure aggiungilo a requirements.txt: -> FACCIO COSI
 
 psycopg2-binary
 
@@ -913,7 +962,7 @@ RISULTATO
 ]
 
 
--- qui con filtro sul dominio -> app.py 
+-- qui con filtro sul dominio -> app.py
 
 # ===== SCRIPT VECCHIO (SENZA DATABASE) =====
 # from flask import Flask
@@ -932,7 +981,7 @@ RISULTATO
 # ===== SCRIPT NUOVO (CON DATABASE + FILTRO) =====
 
 import psycopg2  # libreria per connettersi a PostgreSQL
-from flask import Flask, jsonify, request  
+from flask import Flask, jsonify, request
 # Flask = framework web
 # jsonify = converte Python → JSON
 # request = legge parametri dalla URL (es. ?domain=...)
@@ -944,21 +993,21 @@ def get_db_connection():
     # funzione che apre connessione al database PostgreSQL
 
     return psycopg2.connect(
-        host="db",  
+        host="db",
         # hostname Docker → nome servizio nel docker-compose (NON localhost)
 
-        database="devopsdb",  
+        database="devopsdb",
         # nome del database creato nel container PostgreSQL
 
-        user="devopsuser",  
+        user="devopsuser",
         # utente del database
 
-        password="devopspassword"  
+        password="devopspassword"
         # password del database
     )
 
 
-@app.route("/users")  
+@app.route("/users")
 # endpoint API accessibile via:
 # http://localhost/users
 # oppure:
@@ -966,10 +1015,10 @@ def get_db_connection():
 
 def get_users():
 
-    conn = get_db_connection()  
+    conn = get_db_connection()
     # apre connessione al database
 
-    cur = conn.cursor()  
+    cur = conn.cursor()
     # crea cursore → oggetto che esegue query SQL
 
 
@@ -983,7 +1032,7 @@ def get_users():
 
     # ===== VERSIONE NUOVA (CON FILTRO DINAMICO) =====
 
-    domain = request.args.get("domain")  
+    domain = request.args.get("domain")
     # legge parametro dalla URL:
     # /users?domain=gmail.com
     # se non presente → None
@@ -1006,21 +1055,21 @@ def get_users():
         # prende tutti gli utenti
 
 
-    rows = cur.fetchall()  
+    rows = cur.fetchall()
     # prende risultati della query (filtrati o completi)
 
 
-    cur.close()  
+    cur.close()
     # chiude cursore
 
-    conn.close()  
+    conn.close()
     # chiude connessione DB
 
 
-    users = []  
+    users = []
     # lista vuota per costruire risposta JSON
 
-    for row in rows:  
+    for row in rows:
         # per ogni riga del database
 
         users.append({
@@ -1032,11 +1081,11 @@ def get_users():
 
 
     # ===== RISPOSTA API =====
-    return jsonify(users)  
+    return jsonify(users)
     # restituisce JSON al client
     # (filtrato se ?domain=... presente, altrimenti completo)
-	
-	
+
+
 
 curl "http://127.0.0.1/users?domain=gmail.com"
 
