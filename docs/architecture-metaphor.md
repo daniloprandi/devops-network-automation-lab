@@ -1092,8 +1092,186 @@ curl "http://127.0.0.1/users?domain=gmail.com"
 
 --
 
-cosi aggiungo user (POST)
+- cosi aggiungo user (POST)
 
 curl -X POST http://127.0.0.1/users \
 -H "Content-Type: application/json" \
 -d '{"name":"Marco Test","email":"marco@gmail.com","domain":"gmail.com"}'
+
+
+
+- cosi cancello DELETE
+
+- sotto POST aggiungo 
+
+@app.route("/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "DELETE FROM users WHERE id = %s RETURNING id;",
+        (user_id,)
+    )
+
+    deleted_user = cur.fetchone()
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    if deleted_user:
+        return jsonify({"message": "Utente eliminato"})
+    else:
+        return jsonify({"error": "Utente non trovato"}), 404
+		
+		
+-- cosa fa?
+
+riceve id
+→ cerca utente
+→ elimina dal DB
+→ commit
+→ restituisce risposta JSON
+
+
+- elimino utente id 2
+
+curl -X DELETE http://127.0.0.1/users/2
+
+- se NGINX non risponde fare
+
+docker-compose up -d
+
+curl -X DELETE http://127.0.0.1/users/2
+
+- continua a non funzionare
+
+docker-compose down
+
+
+curl -X DELETE http://127.0.0.1/users/2
+
+- ora ok 
+
+{"message":"Utente eliminato"}
+
+-- flusso reale che ho appena fatto 
+
+curl
+→ nginx
+→ backend
+→ Flask DELETE endpoint
+→ SQL DELETE
+→ PostgreSQL
+→ JSON response
+
+
+- ora PUT 
+
+@app.route("/users/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+
+    data = request.get_json()
+
+    name = data.get("name")
+    email = data.get("email")
+    domain = data.get("domain")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE users
+        SET name = %s, email = %s, domain = %s
+        WHERE id = %s
+        RETURNING id;
+    """, (name, email, domain, user_id))
+
+    updated_user = cur.fetchone()
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    if updated_user:
+        return jsonify({"message": "Utente aggiornato"})
+    else:
+        return jsonify({"error": "Utente non trovato"}), 404
+		
+		
+docker-compose down
+docker-compose up -d --build
+
+curl -X PUT http://127.0.0.1/users/1 \
+-H "Content-Type: application/json" \
+-d '{"name":"Mario Updated","email":"mario@gmail.com","domain":"gmail.com"}'
+
+
+- CRUD aggiornato
+
+FLUSSO 
+
+Client
+→ Nginx
+→ Gunicorn
+→ Flask API
+→ PostgreSQL
+→ volume persistente
+
+
+VALIDATION
+
+- aggiorno funzione POST
+
+@app.route("/users", methods=["POST"])
+def create_user():
+
+    data = request.get_json()
+    # legge JSON dal body della richiesta
+
+    name = data.get("name")
+    email = data.get("email")
+    domain = data.get("domain")
+    # prende i valori dal JSON
+
+    # controllo campi mancanti/vuoti
+    if not name or not email or not domain:
+        return jsonify({
+            "error": "Tutti i campi sono obbligatori"
+        }), 400
+
+    # controllo email base
+    if "@" not in email:
+        return jsonify({
+            "error": "Email non valida"
+        }), 400
+
+    conn = get_db_connection()
+    # apre connessione DB
+
+    cur = conn.cursor()
+    # crea cursore SQL
+
+    cur.execute(
+        "INSERT INTO users (name, email, domain) VALUES (%s, %s, %s);",
+        (name, email, domain)
+    )
+    # inserisce dati nel DB (query parametrizzata)
+
+    conn.commit()
+    # salva modifiche (IMPORTANTISSIMO)
+
+    cur.close()
+    conn.close()
+    # chiude connessione
+
+    return jsonify({"message": "Utente creato"}), 201
+    # risposta + status HTTP 201 (created)
+	
+
+-- TESTO ERRORE (fare rebuild)
+
+curl -X POST http://127.0.0.1/users \
+-H "Content-Type: application/json" \
+-d '{"name":"Mario","email":"mariogmail.com","domain":"gmail.com"}'

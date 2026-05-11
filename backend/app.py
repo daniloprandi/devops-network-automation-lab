@@ -123,16 +123,31 @@ def get_users():
 @app.route("/users", methods=["POST"])
 def create_user():
 
-    data = request.get_json()  
+    data = request.get_json()
     # legge JSON dal body della richiesta
 
-    name = data.get("name")  
-    email = data.get("email")  
-    domain = data.get("domain")  
+    name = data.get("name")
+    email = data.get("email")
+    domain = data.get("domain")
     # prende i valori dal JSON
 
-    conn = get_db_connection()  
+    # controllo campi mancanti/vuoti
+    if not name or not email or not domain:
+        return jsonify({
+            "error": "Tutti i campi sono obbligatori"
+        }), 400
+
+    # controllo email base
+    if "@" not in email:
+        return jsonify({
+            "error": "Email non valida"
+        }), 400
+
+    conn = get_db_connection()
+    # apre connessione DB
+
     cur = conn.cursor()
+    # crea cursore SQL
 
     cur.execute(
         "INSERT INTO users (name, email, domain) VALUES (%s, %s, %s);",
@@ -140,11 +155,66 @@ def create_user():
     )
     # inserisce dati nel DB (query parametrizzata)
 
-    conn.commit()  
+    conn.commit()
     # salva modifiche (IMPORTANTISSIMO)
 
     cur.close()
     conn.close()
+    # chiude connessione
 
-    return jsonify({"message": "utente creato"}), 201  
+    return jsonify({"message": "Utente creato"}), 201
     # risposta + status HTTP 201 (created)
+
+
+
+@app.route("/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "DELETE FROM users WHERE id = %s RETURNING id;",
+        (user_id,)
+    )
+
+    deleted_user = cur.fetchone()
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    if deleted_user:
+        return jsonify({"message": "Utente eliminato"})
+    else:
+        return jsonify({"error": "Utente non trovato"}), 404
+
+
+@app.route("/users/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+
+    data = request.get_json()
+
+    name = data.get("name")
+    email = data.get("email")
+    domain = data.get("domain")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE users
+        SET name = %s, email = %s, domain = %s
+        WHERE id = %s
+        RETURNING id;
+    """, (name, email, domain, user_id))
+
+    updated_user = cur.fetchone()
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    if updated_user:
+        return jsonify({"message": "Utente aggiornato"})
+    else:
+        return jsonify({"error": "Utente non trovato"}), 404
