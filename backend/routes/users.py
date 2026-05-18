@@ -200,3 +200,24 @@ def update_user(user_id):
         return jsonify({
             "error": "Utente non trovato"
         }), 404
+
+# ---------------- HEALTHCHECK ----------------
+# endpoint usato per verificare se il servizio backend è vivo
+
+@users_bp.route("/health", methods=["GET"])
+# crea endpoint HTTP GET raggiungibile su /health
+
+def healthcheck():
+    # funzione eseguita quando arriva richiesta GET /health
+
+    return jsonify({
+        # converte dizionario Python in risposta JSON
+
+        "status": "ok",
+        # indica che il servizio è operativo
+
+        "service": "devopsapp-backend"
+        # nome logico del backend/container
+
+    }), 200
+    # restituisce risposta HTTP 200 OK

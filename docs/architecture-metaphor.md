@@ -1581,3 +1581,109 @@ curl -X DELETE http://127.0.0.1/users/6
 
 curl http://127.0.0.1/users
 
+
+
+***
+
+HEALTHCHECK + LOGGING
+
+- stato servizi
+- monitoraggio
+- runtime
+- stdout/stderr
+- docker logs
+- osservabilità
+
+vado in 'nano routes/users.py' e aggiungo 
+
+# ---------------- HEALTHCHECK ----------------
+
+@users_bp.route("/health", methods=["GET"])
+# endpoint salute servizio
+
+def healthcheck():
+
+    return jsonify({
+        "status": "ok",
+        "service": "devopsapp-backend"
+    }), 200
+
+docker-compose down
+docker-compose up -d --build
+
+TEST
+
+curl http://127.0.0.1/health
+
+Questo è il primo concetto reale di:
+- service health
+- monitoring
+- liveness
+- readiness
+
+che poi porta a:
+
+- Kubernetes probes
+- load balancer checks
+- monitoring stack
+- observability
+
+
+
+*** LOGGING ***
+
+inizio a vedere:
+
+stdout
+stderr
+processi
+docker logs
+runtime behavior
+
+
+Obiettivo: quando arriva una richiesta:
+
+GET /users
+POST /users
+/health
+
+voglio vedere log reali nel container.
+
+nano backend/routes/users.py
+
+aggiungo 'import logging'
+
+creo logger
+
+users_bp = Blueprint("users", __name__)
+logger = logging.getLogger(__name__)
+# crea logger del modulo corrente
+
+-- il file diventa ... 
+
+def healthcheck():
+
+    logger.info("Healthcheck endpoint raggiunto")
+
+    return jsonify({
+        "status": "ok",
+        "service": "devopsapp-backend"
+    }), 200
+
+--
+
+TEST
+
+curl http://127.0.0.1/health
+
+docker ps
+
+docker logs devopsapp-backend
+
+E QUI arriva la parte importante
+
+Sto vedendo:
+
+stdout/stderr del processo gunicorn/python
+
+cioè output runtime reale del container.

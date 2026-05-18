@@ -21,6 +21,8 @@ services:
 
   db:  # servizio database (hostname = "db" nella rete Docker)
     image: postgres:15  # immagine PostgreSQL
+    ports:
+      - '5432:5432'
 
     environment:  # configurazione iniziale DB
       POSTGRES_DB: devopsdb        # nome database
@@ -30,8 +32,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data  # persistenza dati
 
-    expose:
-      - "5432"  # porta DB solo interna Docker
+    # expose:
+    #   - '5432:5432'  # porta DB solo interna Docker
 
     restart: always  # riavvio automatico
 
