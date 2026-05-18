@@ -1686,4 +1686,4 @@ Sto vedendo:
 
 stdout/stderr del processo gunicorn/python
 
-cioè output runtime reale del container.
+cioè output runtime reale del container.cd

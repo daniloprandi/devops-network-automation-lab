@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 
 from db.database import get_db_connection
 # importa funzione connessione DB dal file separato
+import logging
 
 users_bp = Blueprint("users", __name__)
 # crea blueprint dedicato alle route utenti
@@ -210,6 +211,9 @@ def update_user(user_id):
 def healthcheck():
     # funzione eseguita quando arriva richiesta GET /health
 
+    logger.info("Healthcheck endpoint raggiunto")
+    # scrive log informativo
+    
     return jsonify({
         # converte dizionario Python in risposta JSON
 
@@ -221,3 +225,8 @@ def healthcheck():
 
     }), 200
     # restituisce risposta HTTP 200 OK
+
+    
+
+users_bp = Blueprint("users", __name__)
+logger = logging.getLogger(__name__)
