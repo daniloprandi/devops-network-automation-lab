@@ -1,0 +1,9 @@
+cd $DEVOPSAPP_HOME
+
+git status
+
+git add .
+
+git commit -m "Refactor backend into inventario-api architecture"
+
+git push origin main

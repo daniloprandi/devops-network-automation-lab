@@ -2,12 +2,24 @@ version: "3.9"
 
 services:
 
-  backend:
-    build: .  # build dell'immagine dal Dockerfile nella cartella corrente
-    container_name: devopsapp-backend  # nome container
-    expose:
-      - "5000"  # porta backend visibile solo dentro Docker
-    restart: always  # riavvio automatico
+backend:
+
+  build:
+    context: ./inventario-api
+    # cartella contesto build Docker
+
+    dockerfile: Dockerfile
+    # Dockerfile da usare per build immagine
+
+  container_name: devopsapp-backend
+  # nome container backend
+
+  expose:
+    - "5000"
+    # porta backend visibile solo dentro rete Docker
+
+  restart: always
+  # riavvio automatico container
 
   nginx:
     image: nginx:latest  # immagine ufficiale nginx
