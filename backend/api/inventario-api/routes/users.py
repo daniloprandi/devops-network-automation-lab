@@ -3,9 +3,14 @@ from flask import Blueprint, jsonify, request
 # jsonify = converte risposta in JSON
 # request = legge dati in ingresso
 
-from db.database import get_db_connection
+from database.database import get_db_connection
 # importa funzione connessione DB dal file separato
+
 import logging
+# modulo logging Python
+
+logger = logging.getLogger(__name__)
+# crea logger del file corrente
 
 users_bp = Blueprint("users", __name__)
 # crea blueprint dedicato alle route utenti
@@ -109,6 +114,7 @@ def create_user():
     }), 201
     # restituisce conferma creazione
 
+
 # ---------------- DELETE USER ----------------
 
 @users_bp.route("/users/<int:user_id>", methods=["DELETE"])
@@ -141,11 +147,13 @@ def delete_user(user_id):
     # chiude connessione
 
     if deleted_user:
+
         return jsonify({
             "message": "Utente eliminato"
         })
 
     else:
+
         return jsonify({
             "error": "Utente non trovato"
         }), 404
@@ -193,14 +201,17 @@ def update_user(user_id):
     # chiude connessione
 
     if updated_user:
+
         return jsonify({
             "message": "Utente aggiornato"
         })
 
     else:
+
         return jsonify({
             "error": "Utente non trovato"
         }), 404
+
 
 # ---------------- HEALTHCHECK ----------------
 # endpoint usato per verificare se il servizio backend è vivo
@@ -213,7 +224,7 @@ def healthcheck():
 
     logger.info("Healthcheck endpoint raggiunto")
     # scrive log informativo
-    
+
     return jsonify({
         # converte dizionario Python in risposta JSON
 
@@ -225,8 +236,3 @@ def healthcheck():
 
     }), 200
     # restituisce risposta HTTP 200 OK
-
-    
-
-users_bp = Blueprint("users", __name__)
-logger = logging.getLogger(__name__)

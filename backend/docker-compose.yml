@@ -2,52 +2,81 @@ version: "3.9"
 
 services:
 
-backend:
+  backend:
 
-  build:
-    context: ./inventario-api
-    # cartella contesto build Docker
+    build:
+      context: ./api/inventario-api
+      # cartella contesto build Docker
 
-    dockerfile: Dockerfile
-    # Dockerfile da usare per build immagine
+      dockerfile: Dockerfile
+      # Dockerfile da usare per build immagine
 
-  container_name: devopsapp-backend
-  # nome container backend
+    container_name: devopsapp-backend
+    # nome container backend
 
-  expose:
-    - "5000"
-    # porta backend visibile solo dentro rete Docker
+    expose:
+      - "5000"
+      # porta backend visibile solo dentro rete Docker
 
-  restart: always
-  # riavvio automatico container
+    restart: always
+    # riavvio automatico container
+
 
   nginx:
-    image: nginx:latest  # immagine ufficiale nginx
-    container_name: devopsapp-nginx  # nome container
+    image: nginx:latest
+    # immagine ufficiale nginx
+
+    container_name: devopsapp-nginx
+    # nome container
+
     ports:
-      - "80:80"  # espone porta 80 verso l'esterno (client)
+      - "80:80"
+      # espone porta 80 verso l'esterno (client)
+
     volumes:
-      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf  # config nginx
+      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # config nginx
+
     depends_on:
-      - backend  # nginx parte dopo backend
+      - backend
+      # nginx parte dopo backend
 
-  db:  # servizio database (hostname = "db" nella rete Docker)
-    image: postgres:15  # immagine PostgreSQL
+
+  db:
+    # servizio database (hostname = "db" nella rete Docker)
+
+    image: postgres:15
+    # immagine PostgreSQL
+
     ports:
-      - '5432:5432'
+      - "5432:5432"
+      # espone PostgreSQL verso host Linux
 
-    environment:  # configurazione iniziale DB
-      POSTGRES_DB: devopsdb        # nome database
-      POSTGRES_USER: devopsuser    # utente
-      POSTGRES_PASSWORD: devopspassword  # password
+    environment:
+      # configurazione iniziale DB
+
+      POSTGRES_DB: devopsdb
+      # nome database
+
+      POSTGRES_USER: devopsuser
+      # utente
+
+      POSTGRES_PASSWORD: devopspassword
+      # password
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # persistenza dati
+      - postgres_data:/var/lib/postgresql/data
+      # persistenza dati
 
     # expose:
-    #   - '5432:5432'  # porta DB solo interna Docker
+    #   - "5432"
+    # porta DB solo interna Docker
 
-    restart: always  # riavvio automatico
+    restart: always
+    # riavvio automatico
+
 
 volumes:
-  postgres_data:  # volume per salvare dati DB
+
+  postgres_data:
+    # volume per salvare dati DB
