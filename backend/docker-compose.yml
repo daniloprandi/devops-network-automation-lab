@@ -22,6 +22,26 @@ services:
     # riavvio automatico container
 
 
+  osservabilita-api:
+
+    build:
+      context: ./api/osservabilita-api
+      # cartella build osservabilita-api
+
+      dockerfile: Dockerfile
+      # Dockerfile runtime servizio
+
+    container_name: devopsapp-osservabilita-api
+    # nome container osservabilita-api
+
+    expose:
+      - "5000"
+      # porta visibile solo nella rete Docker
+
+    restart: always
+    # restart automatico container
+
+
   nginx:
     image: nginx:latest
     # immagine ufficiale nginx
@@ -40,6 +60,9 @@ services:
     depends_on:
       - backend
       # nginx parte dopo backend
+
+      - osservabilita-api
+      # nginx parte dopo osservabilita-api
 
 
   db:

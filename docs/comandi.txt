@@ -1,9 +1,0 @@
-cd $DEVOPSAPP_HOME
-
-git status
-
-git add .
-
-git commit -m "Add inventario-api architecture and PostgreSQL port publishing"
-
-git push origin main
