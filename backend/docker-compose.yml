@@ -41,6 +41,24 @@ services:
     restart: always
     # restart automatico container
 
+  processi-api:
+
+    build:
+      context: ./api/processi-api
+      # cartella build processi-api
+
+      dockerfile: Dockerfile
+      # Dockerfile runtime servizio
+
+    container_name: devopsapp-processi-api
+    # nome container processi-api
+
+    expose:
+      - '3140'
+      # porta visibile solo nella rete Docker
+
+    restart: always
+    # restart automatico container
 
   nginx:
     image: nginx:latest
