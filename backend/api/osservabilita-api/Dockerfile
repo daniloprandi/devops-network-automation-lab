@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # → immagine più piccola
 
 
-CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:4000", "app:app"]
 # comando eseguito all'avvio container
 #
 # gunicorn:
@@ -34,7 +34,7 @@ CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:5000", "app:app"]
 # -w 3
 # avvia 3 worker/processi Gunicorn
 #
-# -b 0.0.0.0:5000
+# -b 0.0.0.0:4000
 # mette Gunicorn in ascolto
 # sulla porta 5000 del container
 #

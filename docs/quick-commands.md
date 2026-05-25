@@ -6,7 +6,7 @@ git status
 
 git add .
 
-git commit -m 'Add processi-api service and nginx reverse proxy routing'
+git commit -m 'Porte api modificate'
 
 git push origin main
 

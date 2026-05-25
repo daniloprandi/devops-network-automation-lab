@@ -35,8 +35,7 @@ services:
     # nome container osservabilita-api
 
     expose:
-      - "5000"
-      # porta visibile solo nella rete Docker
+      - '4000'      # porta visibile solo nella rete Docker
 
     restart: always
     # restart automatico container
