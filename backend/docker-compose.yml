@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
 
-  backend:
+  inventario-api:
 
     build:
       context: ./api/inventario-api
@@ -11,8 +11,8 @@ services:
       dockerfile: Dockerfile
       # Dockerfile da usare per build immagine
 
-    container_name: devopsapp-backend
-    # nome container backend
+    container_name: devopsapp-inventario-api
+    # nome container inventario-api
 
     expose:
       - "5000"
@@ -75,10 +75,13 @@ services:
       # config nginx
 
     depends_on:
-      - backend
-      # nginx parte dopo backend
+      - inventario-api
+      # nginx parte dopo inventario-api
 
       - osservabilita-api
+      # nginx parte dopo osservabilita-api
+
+      - processi-api
       # nginx parte dopo osservabilita-api
 
 

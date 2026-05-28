@@ -1,6 +1,7 @@
 from flask import Flask
 # importa il framework Flask
 
+import os
 
 app = Flask(__name__)
 # crea l'applicazione Flask principale
@@ -38,3 +39,8 @@ def health():
     'status': 'running'
     # stato runtime API
   }
+
+@app.route('/processes')
+
+def processes():
+  os.listdir('/proc')
