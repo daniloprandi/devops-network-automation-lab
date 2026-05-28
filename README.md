@@ -242,7 +242,7 @@ L’obiettivo è comprendere cosa accade sotto ogni layer dell’applicazione e 
 
 - avvio servizi
 
-- docker compose up -d --build
+- docker-compose up -d --build
 
 - verifica container:
 
@@ -254,7 +254,7 @@ L’obiettivo è comprendere cosa accade sotto ogni layer dell’applicazione e 
 
 - Stop stack:
 
-  - docker compose down
+  - docker-compose down
 
 
 TEST API
@@ -328,3 +328,19 @@ Ogni componente viene introdotto per capire:
 
 
 L’applicazione backend viene utilizzata come ambiente reale per esplorare networking, runtime, processi Linux, containerizzazione e comportamento dei servizi distribuiti.
+
+L’obiettivo non è costruire una semplice applicazione CRUD, ma utilizzare il software come strumento per osservare l’infrastruttura stessa.
+
+Il laboratorio evolve quindi verso un modello in cui:
+
+- l’infrastruttura osserva l’infrastruttura
+
+- i processi osservano altri processi
+
+- i servizi generano telemetria sui servizi
+
+- il networking viene studiato attraverso traffico reale
+
+- il runtime Linux diventa parte integrante dell’osservazione
+
+L’intero progetto è pensato come un percorso progressivo per scendere sotto ogni astrazione software fino ai meccanismi reali del sistema operativo, del networking e del runtime Linux.
