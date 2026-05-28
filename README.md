@@ -75,199 +75,256 @@ Componenti Docker utilizzati:
 - volumi persistenti
 
 Il database PostgreSQL non è esposto direttamente all’esterno.
+
 La comunicazione avviene esclusivamente tramite la rete interna Docker.
 
 COMPONENTI PRINCIPALI
-NGINX
 
 
-reverse proxy
+- NGINX
+
+  - reverse proxy
+
+  - punto di ingresso HTTP
+
+  - gestione traffico verso backend
 
 
-punto di ingresso HTTP
+- GUNICORN
+
+  - application server WSGI
+
+  - gestione concorrente delle richieste
+
+  - runtime server per Flask
 
 
-gestione traffico verso backend
+- FLASK
+
+  - API backend
+
+  - routing HTTP
+
+  - logica applicativa
+
+  - comunicazione database
 
 
-GUNICORN
+- POSTGRESQL
+
+  - database relazionale
+
+  - esecuzione query SQL
+
+  - persistenza dati
 
 
-application server WSGI
+- DOCKER
+
+  - isolamento servizi
+
+  - networking tra container
+
+  - runtime infrastrutturale
 
 
-gestione concorrente delle richieste
+- ENDPOINT API
 
 
-runtime server per Flask
+devops-network-automation-lab/
+│
+├── backend/
+│   │
+│   ├── api/
+│   │   │
+│   │   ├── inventario-api/
+│   │   │   │
+│   │   │   ├── database/
+│   │   │   │
+│   │   │   ├── models/
+│   │   │   │
+│   │   │   ├── routes/
+│   │   │   │
+│   │   │   ├── services/
+│   │   │   │
+│   │   │   ├── app.py
+│   │   │   │
+│   │   │   ├── Dockerfile
+│   │   │   │
+│   │   │   └── requirements.txt
+│   │   │
+│   │   ├── osservabilita-api/
+│   │   │   │
+│   │   │   ├── database/
+│   │   │   │
+│   │   │   ├── routes/
+│   │   │   │
+│   │   │   ├── services/
+│   │   │   │
+│   │   │   ├── utils/
+│   │   │   │
+│   │   │   ├── app.py
+│   │   │   │
+│   │   │   ├── Dockerfile
+│   │   │   │
+│   │   │   └── requirements.txt
+│   │   │
+│   │   └── processi-api/
+│   │       │
+│   │       ├── routes/
+│   │       │
+│   │       ├── services/
+│   │       │
+│   │       ├── utils/
+│   │       │
+│   │       ├── app.py
+│   │       │
+│   │       ├── Dockerfile
+│   │       │
+│   │       └── requirements.txt
+│   │
+│   └── venv/
+│       │
+│       ├── bin/
+│       ├── lib/
+│       ├── lib64/
+│       └── pyvenv.cfg
+│
+├── deploy/
+│   │
+│   ├── devopsapp.service
+│   │
+│   └── scripts/
+│       │
+│       ├── start.sh
+│       ├── restart.sh
+│       └── healthcheck.sh
+│
+├── docs/
+│   │
+│   ├── networking/
+│   ├── docker/
+│   ├── tcp/
+│   └── observability/
+│
+├── nginx/
+│   │
+│   ├── default.conf
+│   │
+│   └── logs/
+│
+├── data/
+│   │
+│   ├── postgres/
+│   │
+│   └── logs/
+│
+├── docker-compose.yml
+│
+├── .env
+│
+├── .gitignore
+│
+├── index.html
+│
+└── README.md
 
-
-FLASK
-
-
-API backend
-
-
-routing HTTP
-
-
-logica applicativa
-
-
-comunicazione database
-
-
-POSTGRESQL
-
-
-database relazionale
-
-
-esecuzione query SQL
-
-
-persistenza dati
-
-
-DOCKER
-
-
-isolamento servizi
-
-
-networking tra container
-
-
-runtime infrastrutturale
-
-
-
-ENDPOINT API
-GET     /usersPOST    /usersPUT     /users/<id>DELETE  /users/<id>
-Funzionalità implementate:
-
-
-CRUD completo
-
-
-API JSON
-
-
-validazione input
-
-
-aggiornamento utenti
-
-
-eliminazione utenti
-
-
-
-STRUTTURA DEL PROGETTO
-/var/www/devopsapp│├── backend/│   ├── app.py│   ├── routes/│   │   └── users.py│   ││   ├── db/│   │   └── database.py│   ││   ├── Dockerfile│   └── requirements.txt│├── nginx/│├── docker-compose.yml│├── .env│└── README.md
 
 LIVELLI DI ASTRAZIONE ESPLORATI
-Questo laboratorio viene utilizzato per esplorare progressivamente diversi livelli infrastrutturali:
-HTTP→ Reverse Proxy→ Runtime WSGI→ Flask Routing→ SQL→ PostgreSQL→ Docker Networking→ Processi Linux→ TCP/IP→ Isolamento Container→ Persistenza Filesystem
-L’obiettivo è comprendere cosa accade sotto ogni layer dell’applicazione e dell’infrastruttura.
 
-AVVIO DELLO STACK
-Avvio servizi:
-docker compose up -d --build
-Verifica container:
-docker ps
-Visualizzazione log:
-docker logs NOME_CONTAINER
-Stop stack:
-docker compose down
+Questo laboratorio viene utilizzato per esplorare progressivamente diversi livelli infrastrutturali:
+
+- HTTP→ Reverse Proxy→ Runtime WSGI→ Flask Routing→ SQL→ PostgreSQL→ Docker Networking→    Processi Linux→ TCP/IP→ Isolamento Container→ Persistenza Filesystem
+
+L’obiettivo è comprendere cosa accade sotto ogni layer dell’applicazione e dell’infrastruttura:
+
+- AVVIO DELLO STACK
+
+- Avvio servizi:
+
+- docker compose up -d --build
+
+- verifica container:
+
+  - docker ps
+
+- Visualizzazione log:
+
+  - docker logs NOME_CONTAINER
+
+- Stop stack:
+
+  - docker compose down
+
 
 TEST API
+
 Lista utenti:
-curl http://127.0.0.1/users
+
+- curl http://127.0.0.1/users
+
 Creazione utente:
-curl -X POST http://127.0.0.1/users \-H "Content-Type: application/json" \-d '{"name":"Mario","email":"mario@gmail.com","domain":"gmail.com"}'
+
+- curl -X POST http://127.0.0.1/users \-H "Content-Type: application/json" \-d '{"name":"Mario","email":"mario@gmail.com","domain":"gmail.com"}'
+
 
 OBIETTIVI TECNICI
 
+- comprendere il ciclo completo di una richiesta HTTP
 
-Comprendere il ciclo completo di una richiesta HTTP
+- distinguere web e application server
 
+- analizzare networking tra container
 
-Distinguere web server e application server
+- comprendere runtime e processi backend
 
+- osservare comunicazione tra servizi
 
-Analizzare networking tra container
+- gestire persistenza dati containerizzata
 
-
-Comprendere runtime e processi backend
-
-
-Osservare comunicazione tra servizi
-
-
-Gestire persistenza dati containerizzata
-
-
-Costruire un ambiente backend modulare e isolato
-
+- costruire un ambiente backend modulare e isolato
 
 
 PROSSIMI PASSI
-Roadmap tecnica prevista:
 
+- variabili ambiente (.env)
 
-variabili ambiente (.env)
+- logging centralizzato
 
+- healthcheck servizi
 
-logging centralizzato
+- monitoring
 
+- redis caching
 
-healthcheck servizi
+- pipeline CI/CD
 
+- tracing
 
-monitoring
+- docker internals
 
+- network inspection
 
-Redis caching
+- namespaces
 
+- cgroups
 
-pipeline CI/CD
-
-
-tracing
-
-
-Docker internals
-
-
-network inspection
-
-
-namespaces
-
-
-cgroups
-
-
-osservabilità eBPF
-
+- osservabilità eBPF
 
 
 NOTA FINALE
+
 Questo laboratorio segue un approccio progressivo orientato all’infrastruttura, all’osservabilità dei sistemi e alla comprensione dei livelli sottostanti.
+
 Ogni componente viene introdotto per capire:
 
+- cosa fa
 
-cosa fa
+- come comunica
 
+- quale layer rappresenta
 
-come comunica
-
-
-quale layer rappresenta
-
-
-cosa esiste sotto di esso
+- cosa esiste sotto di esso
 
 
 L’applicazione backend viene utilizzata come ambiente reale per esplorare networking, runtime, processi Linux, containerizzazione e comportamento dei servizi distribuiti.
