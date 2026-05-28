@@ -9,7 +9,7 @@ app = Flask(__name__)
 # nome del modulo Python corrente
 #
 # Flask usa questa informazione per:
-# - path interni
+# - path interni 
 # - templates
 # - static files
 # - root application context
