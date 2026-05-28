@@ -238,9 +238,9 @@ Questo laboratorio viene utilizzato per esplorare progressivamente diversi livel
 
 L’obiettivo è comprendere cosa accade sotto ogni layer dell’applicazione e dell’infrastruttura:
 
-- AVVIO DELLO STACK
+- avvio dello stack
 
-- Avvio servizi:
+- avvio servizi
 
 - docker compose up -d --build
 
