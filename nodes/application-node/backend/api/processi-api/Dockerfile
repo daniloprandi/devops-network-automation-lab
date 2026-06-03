@@ -7,9 +7,34 @@ WORKDIR /app
 # tutto il runtime API vivrà dentro /app
 
 
-COPY . .
-# copia tutti i file locali
-# dentro il filesystem del container
+COPY api/processi-api .
+# copia il codice della processi-api
+#
+# sorgente:
+# backend/api/processi-api
+#
+# destinazione:
+# /app dentro il container
+#
+# porta dentro:
+# - app.py
+# - requirements.txt
+# - file del servizio
+
+
+COPY common ./common
+# copia il codice condiviso
+#
+# sorgente:
+# backend/common
+#
+# destinazione:
+# /app/common dentro il container
+#
+# contiene moduli riutilizzabili:
+# - database
+# - configurazioni future
+# - utility future
 
 RUN apt-get update && apt-get install -y procps
 # installa tool Linux:

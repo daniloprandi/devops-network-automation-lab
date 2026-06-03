@@ -41,12 +41,10 @@ services:
     # restart automatico container
 
   processi-api:
-
     build:
-      context: ./api/processi-api
+      context: .
       # cartella build processi-api
-
-      dockerfile: Dockerfile
+      dockerfile: api/processi-api/Dockerfile
       # Dockerfile runtime servizio
 
     container_name: devopsapp-processi-api
