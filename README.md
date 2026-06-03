@@ -1,4 +1,529 @@
-DEVOPS NETWORK AUTOMATION LAB | LABORATORIO DEVOPS — INFRASTRUTTURA, RETI E RUNTIME
+# DEVOPS NETWORK AUTOMATION LAB
+
+## Laboratorio DevOps — Infrastructure, Networking e Linux Runtime
+
+
+## Autore
+
+Danilo Prandi  
+ChatGPT (supporto strutturazione, revisione tecnica e documentazione)
+
+
+---
+
+# Panoramica
+
+Questo progetto è un laboratorio pratico orientato allo studio dei sistemi.
+
+L'obiettivo non è creare una semplice applicazione backend, ma costruire un ambiente reale dove osservare cosa succede sotto i diversi livelli di astrazione:
+
+- applicazioni
+- processi Linux
+- runtime Python
+- reverse proxy
+- container Docker
+- networking TCP/IP
+- database
+- filesystem
+- kernel Linux
+
+L'applicazione diventa uno strumento per osservare l'infrastruttura.
+
+
+---
+
+# Architettura generale
+
+
+```text
+CLIENT
+
+  |
+  | HTTP :80
+  v
+
+APPLICATION NODE
+(serverlab01)
+
+  |
+  v
+
+NGINX container
+(reverse proxy)
+
+  |
+  | Docker Network
+  v
+
+
++-------------------------------+
+
+ Flask/Gunicorn Services
+
+
+ inventario-api
+ porta 5000
+
+
+ osservabilita-api
+ porta 4000
+
+
+ processi-api
+ porta 3140
+
+        |
+        |
+        v
+
+      /proc
+        |
+        v
+   Linux Kernel
+
+
+ PostgreSQL
+ porta 5432
+
++-------------------------------+
+```
+
+
+---
+
+# Nodi infrastrutturali
+
+
+Il progetto è organizzato come un ambiente multi-nodo.
+
+
+```text
+nodes
+
+├── application-node
+│
+├── observability-node
+│
+└── client-node
+```
+
+
+## application-node
+
+Nodo attualmente implementato.
+
+Contiene:
+
+- API runtime
+- NGINX
+- Docker Compose
+- database
+- script di gestione sistema
+
+
+## observability-node
+
+Futuro nodo dedicato a:
+
+- monitoring
+- logging
+- metriche
+- tracing
+
+
+## client-node
+
+Futuro nodo per simulare:
+
+- client
+- traffico HTTP
+- richieste di rete
+
+
+---
+
+# Alberatura progetto
+
+
+```text
+devopsapp
+
+├── containers
+│
+├── docs
+│
+├── linux
+│
+├── networking
+│
+├── nodes
+│   │
+│   ├── application-node
+│   │   │
+│   │   ├── backend
+│   │   │   │
+│   │   │   ├── api
+│   │   │   │
+│   │   │   ├── inventario-api
+│   │   │   ├── osservabilita-api
+│   │   │   └── processi-api
+│   │   │
+│   │   ├── docker-compose.yml
+│   │   │
+│   │   ├── nginx
+│   │   │
+│   │   ├── deploy
+│   │   │
+│   │   └── scripts
+│   │
+│   ├── observability-node
+│   │
+│   └── client-node
+│
+└── README.md
+```
+
+
+---
+
+# Container Docker
+
+
+Container attuali:
+
+
+```text
+devopsapp-nginx
+
+devopsapp-inventario-api
+
+devopsapp-osservabilita-api
+
+devopsapp-processi-api
+
+PostgreSQL
+```
+
+
+---
+
+# Componenti
+
+
+## NGINX
+
+Ruolo:
+
+- reverse proxy
+- punto ingresso HTTP
+- instradamento verso API interne
+
+
+---
+
+## Gunicorn
+
+Application server WSGI.
+
+Gestisce:
+
+- worker Python
+- processi Flask
+- richieste concorrenti
+
+
+---
+
+## Flask
+
+Framework API.
+
+Gestisce:
+
+- routing HTTP
+- endpoint
+- logica dei servizi
+
+
+---
+
+## PostgreSQL
+
+Database relazionale.
+
+Gestisce:
+
+- dati persistenti
+- storage tramite volume Docker
+
+
+---
+
+## Docker
+
+Layer di isolamento.
+
+Gestisce:
+
+- container
+- immagini
+- networking
+- runtime
+
+
+---
+
+# API disponibili
+
+
+## inventario-api
+
+
+```text
+/inventario-api
+```
+
+Gestione informazioni infrastrutturali.
+
+
+---
+
+
+## osservabilita-api
+
+
+```text
+/osservabilita-api
+```
+
+Raccolta dati e osservazione servizi.
+
+
+---
+
+
+## processi-api
+
+
+```text
+/processi-api/processes
+```
+
+
+Espone informazioni runtime Linux leggendo:
+
+```text
+/proc
+```
+
+
+Flusso:
+
+```text
+HTTP request
+
+ ↓
+
+Flask route
+
+ ↓
+
+Python os module
+
+ ↓
+
+/proc filesystem
+
+ ↓
+
+Linux Kernel
+```
+
+
+---
+
+# Livelli studiati
+
+
+Il laboratorio segue il percorso:
+
+
+```text
+HTTP
+
+ ↓
+
+NGINX
+
+ ↓
+
+Gunicorn
+
+ ↓
+
+Flask
+
+ ↓
+
+Docker
+
+ ↓
+
+Linux process
+
+ ↓
+
+/proc
+
+ ↓
+
+Kernel
+
+ ↓
+
+Networking
+
+ ↓
+
+Hardware
+```
+
+
+Obiettivo:
+
+scendere progressivamente sotto ogni astrazione.
+
+
+---
+
+# Comandi principali
+
+
+Avvio stack:
+
+
+```bash
+docker-compose up -d --build
+```
+
+
+Verifica container:
+
+
+```bash
+docker ps
+```
+
+
+Log:
+
+
+```bash
+docker logs nome_container
+```
+
+
+Stop:
+
+
+```bash
+docker-compose down
+```
+
+
+Test processi:
+
+
+```bash
+curl http://localhost/processi-api/processes
+```
+
+
+---
+
+# Prossimi sviluppi
+
+
+## Linux runtime
+
+- leggere `/proc/PID/status`
+- PID
+- process state
+- memoria
+- parent process
+
+
+## Docker internals
+
+- namespace
+- cgroups
+- bridge network
+
+
+## Networking
+
+- socket
+- TCP handshake
+- tcpdump
+- netstat / ss
+
+
+## Observability
+
+- metriche
+- tracing
+- logging
+- eBPF
+
+
+---
+
+# Filosofia del progetto
+
+
+Questo laboratorio non studia solamente come creare servizi software.
+
+Studia cosa succede sotto:
+
+- quando nasce un processo
+- come comunica un servizio
+- come viaggia una richiesta HTTP
+- come Docker isola un runtime
+- come Linux espone informazioni interne
+
+L'obiettivo finale è comprendere l'intero percorso:
+
+```text
+Codice
+
+ ↓
+
+Runtime
+
+ ↓
+
+Sistema operativo
+
+ ↓
+
+Kernel
+
+ ↓
+
+Hardware
+
+
+
+
+
+
+
+# ======================================================================================================================================
+# ======================================================================================================================================  #====================================================================================================================================== 
+
+
+
+<!-- DEVOPS NETWORK AUTOMATION LAB | LABORATORIO DEVOPS — INFRASTRUTTURA, RETI E RUNTIME
 
 
 AUTORE
@@ -343,4 +868,4 @@ Il laboratorio evolve quindi verso un modello in cui:
 
 - il runtime Linux diventa parte integrante dell’osservazione
 
-L’intero progetto è pensato come un percorso progressivo per scendere sotto ogni astrazione software fino ai meccanismi reali del sistema operativo, del networking e del runtime Linux.
+L’intero progetto è pensato come un percorso progressivo per scendere sotto ogni astrazione software fino ai meccanismi reali del sistema operativo, del networking e del runtime Linux. -->
