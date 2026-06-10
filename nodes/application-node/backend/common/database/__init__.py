@@ -1,1 +1,1 @@
-from .connection import get_db_connection
+from .connection import ge_db_connection
