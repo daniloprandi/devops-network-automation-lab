@@ -1,275 +1,296 @@
-# Flusso Sistema Distribuito DevOps Lab
+# Flusso reale richiesta VM3 -> VM1
 
 
-## Scenario
+## 1) Utente su VM3
 
-VM3 esegue:
+Esegue:
 
 curl http://192.168.200.128/processi-api/processes
 
 
-Obiettivo:
+Cosa succede:
 
-seguire una richiesta dal client fino al kernel Linux
-e osservare il sistema tramite VM2.
-
-
----
-
-# FLUSSO VM3 -> VM1
-
-
-## 1) VM3 simulation-node
-
-L'utente lancia curl.
+viene avviato il programma curl.
 
 Linux crea un processo:
 
-curl
-PID xxxx
+nome: curl
+PID: xxxx
+
 
 
 ## 2) Processo curl
 
-curl costruisce:
+curl analizza l'URL:
+
+protocollo:
+http
+
+server:
+192.168.200.128
+
+risorsa richiesta:
+/processi-api/processes
+
+
+curl costruisce il messaggio HTTP:
+
+GET /processi-api/processes HTTP/1.1
+Host: 192.168.200.128
+
+
+
+## 3) curl chiede al sistema operativo di spedire
+
+curl non parla direttamente con la scheda rete.
+
+Chiama il kernel tramite syscall:
+
+socket()
+connect()
+send()
+
+
+
+## 4) Kernel VM3 crea una socket
+
+Nasce un endpoint di comunicazione:
+
+192.168.200.131:porta_random
+
+esempio:
+
+192.168.200.131:45678
+
+
+
+## 5) TCP crea il segmento
+
+Il kernel aggiunge:
+
+porta sorgente: 45678
+porta destinazione: 80
+
+
+crea:
+
+TCP SEGMENT
+
+
+
+## 6) IP crea il pacchetto
+
+Il livello IP aggiunge:
+
+IP sorgente:
+192.168.200.131
+
+IP destinazione:
+192.168.200.128
+
+
+crea:
+
+IP PACKET
+
+
+
+## 7) Ethernet crea il frame
+
+Vengono aggiunti:
+
+MAC sorgente VM3
+
+MAC destinazione VM1
+
+
+crea:
+
+ETHERNET FRAME
+
+
+
+## 8) VM1 riceve il frame
+
+Il kernel smonta:
+
+FRAME
+ ↓
+IP PACKET
+ ↓
+TCP SEGMENT
+ ↓
+HTTP REQUEST
+
+
+vede:
+
+porta destinazione 80
+
+
+
+## 9) Kernel VM1 consegna a nginx
+
+La porta 80 appartiene al processo:
+
+nginx
+
+PID xxxx
+
+
+La richiesta entra nel container nginx.
+
+
+
+## 10) nginx legge la richiesta
+
+Riceve:
 
 GET /processi-api/processes
 
-e prepara una richiesta HTTP.
 
-
-## 3) Kernel VM3
-
-curl usa le syscall di rete.
-
-Linux crea una socket TCP.
-
-
-## 4) Connessione TCP
-
-Nasce:
-
-VM3 porta random
-        |
-        v
-VM1 porta 80
-
-
-## 5) Incapsulamento rete
-
-La richiesta diventa:
-
-HTTP
- ↓
-TCP segment
- ↓
-IP packet
- ↓
-Ethernet frame
-
-
-## 6) VM1 serverlab-01
-
-La scheda di rete riceve il frame.
-
-Il kernel Linux ricostruisce i dati.
-
-
-## 7) Porta 80
-
-Linux vede:
-
-destinazione TCP 80
-
-e consegna al processo nginx.
-
-
-## 8) Container nginx
-
-Nginx riceve:
-
-GET /processi-api/processes
-
-
-## 9) Configurazione nginx
-
-Legge:
+apre:
 
 nginx/default.conf
 
-e cerca una location valida.
 
 
-## 10) Routing nginx
+## 11) nginx controlla le regole
 
 Trova:
 
 location /processi-api/
 
-e inoltra la richiesta.
+
+decide:
+
+questa richiesta deve andare a processi-api
 
 
-## 11) Docker network
 
-La richiesta passa nella rete Docker.
+## 12) nginx crea una nuova richiesta interna
 
 Destinazione:
 
-processi-api:3140
+http://processi-api:3140
 
 
-## 12) Container processi-api
+Docker DNS traduce:
 
-Dentro gira:
+processi-api
 
+in
+
+IP container
+
+
+
+## 13) Gunicorn riceve
+
+Nel container processi-api gira:
+
+gunicorn
+
+
+Il worker prende la richiesta.
+
+
+
+## 14) Gunicorn chiama Flask
+
+Carica:
+
+app.py
+
+
+passa la richiesta all'app Flask.
+
+
+
+## 15) Flask cerca la route
+
+Trova:
+
+@app.route("/processes")
+
+
+quindi esegue la funzione collegata.
+
+
+
+## 16) La funzione Python parte
+
+Il codice chiama:
+
+os.listdir("/proc")
+
+
+per chiedere:
+
+quali processi esistono?
+
+
+
+## 17) Linux legge /proc
+
+/proc è creato dal kernel.
+
+
+Dentro trova:
+
+/proc/1
+/proc/25
+/proc/40
+
+
+
+## 18) Python costruisce gli oggetti
+
+Crea strutture:
+
+dictionary
+
+{
+ pid: 1,
+ name: nginx
+}
+
+
+
+## 19) Flask crea JSON
+
+Trasforma i dati:
+
+Python dict
+
+↓
+
+JSON HTTP response
+
+
+
+## 20) Risposta torna indietro
+
+JSON
+
+↓
 Gunicorn
 
+↓
+nginx
 
-## 13) Gunicorn
-
-Un worker riceve la richiesta.
-
-La passa all'app Flask.
-
-
-## 14) Flask
-
-Flask cerca la route:
-
-/processes
-
-ed esegue la funzione Python.
-
-
-## 15) Codice Python
-
-La funzione usa moduli Linux.
-
-Esempio:
-
-os.listdir()
-
-
-## 16) Filesystem /proc
-
-Python legge:
-
-/proc/PID/status
-
-
-## 17) Kernel Linux
-
-Il kernel restituisce:
-
-- PID
-- nome processo
-- memoria
-- stato
-- thread
-
-
-## 18) Creazione JSON
-
-Flask prepara la risposta:
-
-[
- {"pid":1}
-]
-
-
-## 19) Ritorno risposta
-
-Percorso inverso:
-
-Flask
- ↓
-Gunicorn
- ↓
-Nginx
- ↓
+↓
 TCP/IP
- ↓
-VM3 curl
 
-
-## 20) Fine
-
-curl stampa il JSON.
-
-Il processo curl termina.
+↓
+curl VM3
 
 
 
-# FLUSSO VM2 -> VM1 (OBSERVABILITY)
+## 21) Fine
 
+curl riceve il JSON.
 
-## 1) VM2 observability-node
+lo stampa.
 
-Esegue:
-
-collector.py
-
-
-## 2) Processo Python
-
-Linux crea:
-
-python3 PID xxxx
-
-
-## 3) Collector
-
-Ogni 5 secondi esegue:
-
-requests.get()
-
-
-## 4) Richiesta monitoring
-
-Interroga:
-
-VM1/processi-api/processes
-
-
-## 5) VM1 risponde
-
-Restituisce informazioni runtime Linux.
-
-
-## 6) VM2 analizza
-
-Riceve JSON.
-
-Calcola metriche.
-
-
-## 7) Futuro
-
-Genererà:
-
-- logs
-- eventi
-- anomalie
-- security alert
-
-
-
-# Schema finale
-
-
-VM3
-genera traffico
-
- ↓
-
-VM1
-riceve
-processa
-espone dati
-
- ↓
-
-VM2
-osserva
-analizza
-monitora
+il processo curl termina.
